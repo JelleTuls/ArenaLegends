@@ -315,7 +315,7 @@ GameObject:
   - component: {fileID: 8579098221655326917}
   - component: {fileID: 2759941718598547113}
   m_Layer: 0
-  m_Name: PowerUp
+  m_Name: SE_PowerUp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -443,7 +443,7 @@ GameObject:
   - component: {fileID: 8735073633482239714}
   - component: {fileID: 6311858919270370356}
   m_Layer: 0
-  m_Name: SwordSlashBasic1
+  m_Name: SE_SwordSlashBasic2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2085,7 +2085,7 @@ GameObject:
   - component: {fileID: 1658081677662318138}
   - component: {fileID: 6979615020338267570}
   m_Layer: 0
-  m_Name: PowerUpPop
+  m_Name: SE_PowerUpPop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2769,7 +2769,7 @@ GameObject:
   - component: {fileID: 7265599172502069972}
   - component: {fileID: 7441435103066293052}
   m_Layer: 0
-  m_Name: HealBandage
+  m_Name: SE_HealBandage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5788,7 +5788,7 @@ GameObject:
   - component: {fileID: 6468469221586192740}
   - component: {fileID: 1615846234019798728}
   m_Layer: 0
-  m_Name: SwordSlashBasic2
+  m_Name: SE_SwordSlashBasic1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6225,8 +6225,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 291530362752665880}
-  - {fileID: 8735073633482239714}
   - {fileID: 6468469221586192740}
+  - {fileID: 8735073633482239714}
   - {fileID: 6797566203543793362}
   - {fileID: 5054907801069634394}
   - {fileID: 2950662115865399564}
@@ -8617,7 +8617,7 @@ GameObject:
   - component: {fileID: 7864704285519630404}
   - component: {fileID: 7868873083212637948}
   m_Layer: 0
-  m_Name: Shield
+  m_Name: SE_Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8973,7 +8973,7 @@ GameObject:
   - component: {fileID: 5054907801069634394}
   - component: {fileID: 124851227388466155}
   m_Layer: 0
-  m_Name: FootstepsHeavy
+  m_Name: SE_FootstepsHeavy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9531,7 +9531,7 @@ GameObject:
   - component: {fileID: 2950662115865399564}
   - component: {fileID: 5599400718889994370}
   m_Layer: 0
-  m_Name: FootstepsBasic
+  m_Name: SE_FootstepsSoft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
