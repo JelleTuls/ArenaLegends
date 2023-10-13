@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: db8cb1f9478666c4d9af08eca6294f05
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 216102
+  packageName: OToon - URP Toon Shading
+  packageVersion: 1.6.8
+  assetPath: Assets/OToon- URP Toon Shading/Demo(Can be delete)/Scripts/Rotator.cs
+  uploadId: 602938

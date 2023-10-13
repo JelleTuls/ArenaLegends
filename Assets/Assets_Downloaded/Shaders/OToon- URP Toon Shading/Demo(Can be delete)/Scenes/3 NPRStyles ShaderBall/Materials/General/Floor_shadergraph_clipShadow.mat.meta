@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 2b1fe45cc9ae2b7499d7ae13d4a1a254
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 216102
+  packageName: OToon - URP Toon Shading
+  packageVersion: 1.6.8
+  assetPath: Assets/OToon- URP Toon Shading/Demo(Can be delete)/Scenes/3 NPRStyles
+    ShaderBall/Materials/General/Floor_shadergraph_clipShadow.mat
+  uploadId: 602938

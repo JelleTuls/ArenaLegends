@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a1477f69430e03d4797050413a8f802d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 258376
+  packageName: Piloto Studio Shaders
+  packageVersion: 1.0
+  assetPath: Assets/Piloto Studio/Shaders/PBR_Piloto/PBR_Gradient_Character_MARKETINGONLY.mat
+  uploadId: 606922

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 127b47688c4616a46949a94fa3337e9d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 216102
+  packageName: OToon - URP Toon Shading
+  packageVersion: 1.6.8
+  assetPath: Assets/OToon- URP Toon Shading/Demo(Can be delete)/Scenes/1 Tutorials/Materials/OtoonShaderGraph/HaftoneGraph.mat
+  uploadId: 602938
