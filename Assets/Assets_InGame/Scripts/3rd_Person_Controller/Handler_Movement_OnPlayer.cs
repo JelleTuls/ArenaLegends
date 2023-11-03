@@ -14,7 +14,6 @@ namespace CJ
     {
         //Variables:
         #region Photon Requirements:
-        //Photon Views:
         PhotonView view;
         PhotonView cameraView;
         PhotonView uiCanvasView;
@@ -22,28 +21,30 @@ namespace CJ
         #endregion
 
         #region Player Requirements:
+        // Player objects:
         public CharacterController controller;
         public GameObject playerModel;
         public GameObject playerGameObject;
+        // Rigidbody:
         Rigidbody rb;
-
+        // Orientations:
         public Transform horizontalOrientation;
         public GameObject backwardsOrientation; 
         private Vector3 horizontalRotation;
         private Vector3 moveDirection; //Determine direction based on Horizontal / Veritcal Input
         private Vector3 rollDirection;
-
+        // Targetting:
         private GameObject isAttackTarget;
         #endregion
 
         #region State Checks:
         //private bool isInteracting;
-        private bool canWalk; //Always true, EXCEPT: isRolling, isEvading!
-        private bool isStandingStill; //Currently for regulation purpuse only!
-        private bool isJumping = false;
-        private bool isJumpingAnimation = false;
+        private bool canWalk; //Default = TRUE | Roll & Evade = FALSE
+        private bool isStandingStill; // If moving = TRUE | TRUE --> Evade | FALSE = Roll
+        private bool isJumping = false; // Jump = TRUE, Else = FALSE
+        private bool isJumpingAnimation = false; // for anim Bool | isGrounded = FALSE | Jump = TRUE
 
-        private bool isRolling;
+        private bool isRolling; // 
         private bool isEvading;
 
         [SerializeField] public bool isShielded;
@@ -63,6 +64,7 @@ namespace CJ
         public float moveSpeedStore;
         public float rotateSpeed;
         public float gravityScale; //Gravity Multiplyer
+        // Movement Audio:
         public AudioSource footstepsBasic;
         public AudioSource footstepsHeavy;
         #endregion
