@@ -8,7 +8,6 @@ namespace CJ
     
 public class Bandage_Follow : MonoBehaviour
 {
-    public float lifetime = 5.0f;
     public Transform follow;
 
     // Start is called before the first frame update

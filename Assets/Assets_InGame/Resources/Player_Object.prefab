@@ -3468,16 +3468,28 @@ MonoBehaviour:
   moveSpeedStore: 0
   rotateSpeed: 10
   gravityScale: 0.15
+  jumpGravityScale: 2.5
   footstepsBasic: {fileID: 5599400718889994370}
   footstepsHeavy: {fileID: 124851227388466155}
+  myPortraitImage: {fileID: 5615273115484698276}
+  myPortraitClass: {fileID: 0}
+  myPortrait: {fileID: 21300000, guid: 07e090f889dae457eae973a49b4334cf, type: 3}
+  myClass: {fileID: 21300000, guid: d64a39024b41344dcae62c84f9f258a2, type: 3}
+  myName: {fileID: 0}
+  channelBar: {fileID: 4960047518341289308}
+  channelGroup: {fileID: 7383693472727732067}
+  joystickMovement: {fileID: 5608945633017632103}
+  uiCanvas: {fileID: 5993342554242079209}
+  mainCamera: {fileID: 3339574690648869386}
+  miniMapCamera: {fileID: 2706191971711040821}
+  anim: {fileID: 45695847458554724}
   jumpForce: 6
-  jumpGravityScale: 2.5
   rollSpeed: 1
   rollTime: 0.4
   evadeSpeed: 100
   evadeTime: 0.2
-  SE_Roll: {fileID: 5632614181643302013}
   uiFillDodge: {fileID: 8360647292660067144}
+  SE_Roll: {fileID: 5632614181643302013}
   attackRange: 5
   basicAttackSlash1: {fileID: 5274911121258735464}
   basicAttackSlash2: {fileID: 6773727393158677861}
@@ -3499,28 +3511,16 @@ MonoBehaviour:
   SE_ShieldBreak: {fileID: 5315902521975894091}
   bandageObject: {fileID: 8151777967954890225, guid: c33d7379becf549eba65a9ed0b15d37d,
     type: 3}
-  uiFillBandage: {fileID: 8262104332633301821}
   healBandage: {fileID: 7441435103066293052}
+  uiFillBandage: {fileID: 8262104332633301821}
   groupStanceA: {fileID: 7570890791893060002}
   groupStanceB: {fileID: 1632857371878053990}
   swapVFX: {fileID: 2649134482686606479, guid: f45cf8979373c4f31bbadbbf8786d47f, type: 3}
-  uiFillSwap: {fileID: 1479375161341192891}
   swapIconA: {fileID: 1595791629005565127}
   swapIconB: {fileID: 5796885827620245251}
+  uiFillSwap: {fileID: 1479375161341192891}
   PowerUp1: {fileID: 2759941718598547113}
   PowerUpPop: {fileID: 6979615020338267570}
-  myPortraitImage: {fileID: 5615273115484698276}
-  myPortraitClass: {fileID: 0}
-  myPortrait: {fileID: 21300000, guid: 07e090f889dae457eae973a49b4334cf, type: 3}
-  myClass: {fileID: 21300000, guid: d64a39024b41344dcae62c84f9f258a2, type: 3}
-  myName: {fileID: 0}
-  channelBar: {fileID: 4960047518341289308}
-  channelGroup: {fileID: 7383693472727732067}
-  joystickMovement: {fileID: 5608945633017632103}
-  uiCanvas: {fileID: 5993342554242079209}
-  mainCamera: {fileID: 3339574690648869386}
-  miniMapCamera: {fileID: 2706191971711040821}
-  anim: {fileID: 45695847458554724}
 --- !u!114 &7530327935859781832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3534,14 +3534,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerObject: {fileID: 2590065593329643352}
+  isTarget: {fileID: 0}
+  targetSelection: {fileID: 7277246236556171170}
   checkRadius: 16
   checkLayers:
     serializedVersion: 2
     m_Bits: 8
-  targetSelection: {fileID: 7277246236556171170}
-  isTarget: {fileID: 0}
-  targetHealth: 0
-  targetMaxHealth: 0
   targetPortraitImage: {fileID: 2088253928549172789}
   targetPortraitClass: {fileID: 0}
   targetPortraitNoSelection: {fileID: 21300000, guid: b9608152e5184448e83be6209b975a0a,
@@ -3550,6 +3548,8 @@ MonoBehaviour:
     type: 3}
   frontHealthBar: {fileID: 751249170300705305}
   frontEnergyBar: {fileID: 1094117296032503085}
+  targetHealth: 0
+  targetMaxHealth: 0
 --- !u!114 &1236334669693683848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3562,15 +3562,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfbcc76cb62db47df84459dbe01f32eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 2590065593329643352}
-  shieldReduction: 2
-  myPortrait: {fileID: 21300000, guid: 8923603d7d24b4ebc9e1c455752203e3, type: 3}
-  myClass: {fileID: 21300000, guid: d64a39024b41344dcae62c84f9f258a2, type: 3}
   myHealth: 0
   myMaxHealth: 100
+  myPortrait: {fileID: 21300000, guid: 8923603d7d24b4ebc9e1c455752203e3, type: 3}
+  myClass: {fileID: 21300000, guid: d64a39024b41344dcae62c84f9f258a2, type: 3}
   frontHealthBar: {fileID: 1667372357982397424}
   floatingHealthBar: {fileID: 1163361370903105698}
-  frontEnergyBar: {fileID: 2048091051924309219}
 --- !u!114 &4314308493254283602
 MonoBehaviour:
   m_ObjectHideFlags: 0

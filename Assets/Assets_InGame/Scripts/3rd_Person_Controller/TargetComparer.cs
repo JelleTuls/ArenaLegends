@@ -2,29 +2,51 @@ using System.Collections;
 using System;
 using UnityEngine;
 
-namespace CJ{
+//_____________________________________________________________________________________________________________________
+//NOTES
+//---------------------------------------------------------------------------------------------------------------------
+//NOTE: 
+//          (1) Still have to figure out what TargetComparer() does!
 
+namespace CJ
+{
     public class TargetComparer : IComparer
     {
-        private Transform compareTransform;
+        
+//_____________________________________________________________________________________________________________________
+// GENERAL VARIABLES:
+//---------------------------------------------------------------------------------------------------------------------
+#region VARIABLES
+    private Transform compareTransform; // To temporary store a transform object of target from list (List originates from Sense script)
+#endregion VARIABLES
 
-        public TargetComparer(Transform compTransform)
+//_____________________________________________________________________________________________________________________
+// FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
+#region FUNCTIONS
+    #region F: TargetComparer
+        public TargetComparer(Transform compTransform) 
         {
             compareTransform = compTransform;
         }
+    #endregion F: TargetComparer
 
-        public int Compare(object x, object y)
+
+    #region Comparer
+        public int Compare(object x, object y) // Function to calculate the distance between object x and object y
         {
-            Collider xCollider = x as Collider;
-            Collider yCollider = y as Collider;
+            Collider xCollider = x as Collider; // Set collider X
+            Collider yCollider = y as Collider; // Set collider Y
 
-            Vector3 offset = xCollider.transform.position - compareTransform.position;
-            float xDistance = offset.sqrMagnitude;
+            Vector3 offset = xCollider.transform.position - compareTransform.position; // Gets the difference in distance between xCollider and compareTransform
+            float xDistance = offset.sqrMagnitude; // Calculate the distance of X
 
-            offset = yCollider.transform.position - compareTransform.position;
-            float  yDistance = offset.sqrMagnitude;
+            offset = yCollider.transform.position - compareTransform.position; // Gets the difference in distance between yCollider and compareTransform
+            float  yDistance = offset.sqrMagnitude; // Calculate the distance of Y
 
-            return xDistance.CompareTo(yDistance);
+            return xDistance.CompareTo(yDistance); // Compare X to Y
         }
+    #endregion Comparer
+#endregion FUNCTIONS
     }
 }
