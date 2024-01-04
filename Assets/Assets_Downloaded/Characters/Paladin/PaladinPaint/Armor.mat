@@ -27,7 +27,6 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _HAFTONESHAPES_DOT
-  - _SPECULARHIGHLIGHTS
   m_InvalidKeywords:
   - _EMISSION
   - _SPECULAR_COLOR
@@ -42,7 +41,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 7356b8f560250e3428281bba49c0f64d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 26b627439721f4ddaa25343a36dd9873, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -70,7 +69,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _HatchingPatternMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 26260d3c1fb3b4d8c808f5f3ed4891d1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -116,7 +115,7 @@ Material:
     - Vector1_0f3ca3289daa40b4a7654cc64fd05ec1: 0
     - Vector1_85d44c600d6c46b38d9c8065f25681ea: 0
     - Vector1_c89cb8dc56774a9583c7b9c3a5725c4c: 0
-    - Vector1_e5b6f1488dec4326bd8bbd0e05156810: 0.112
+    - Vector1_e5b6f1488dec4326bd8bbd0e05156810: -0.438
     - _AllToon_OverrideShadowColor: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
@@ -154,7 +153,7 @@ Material:
     - _HalftoneUseScreenSpaceUV: 0
     - _HatchingDensity: 1
     - _HatchingDiffuseOffset: 0
-    - _HatchingDrawStrength: 4
+    - _HatchingDrawStrength: 2.53
     - _HatchingEnabled: 0
     - _HatchingRotation: 0
     - _HatchingSmoothness: 0.2
@@ -168,15 +167,15 @@ Material:
     - _ReceiveShadows: 1
     - _RimLightAlign: 0
     - _RimLightSmootness: 0
-    - _RimPower: 0
-    - _SPECULARHIGHLIGHTS: 1
+    - _RimPower: 0.102
+    - _SPECULARHIGHLIGHTS: 0
     - _ShadowPatternSize: 0.3
     - _Shininess: 0
     - _Smoothness: 0
     - _SmoothnessSource: 0
     - _SmoothnessTextureChannel: 0
-    - _SpecColor_1: 0.121
-    - _SpecFalloff: 0.262
+    - _SpecColor_1: 0.051
+    - _SpecFalloff: 0.099
     - _SpecShadowStrenth: 1
     - _SpecSource: 0
     - _SpecularHighlights: 0
@@ -195,9 +194,9 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _HalftoneColor: {r: 0.517647, g: 0.517647, b: 0.517647, a: 1}
-    - _HatchingColor: {r: 0, g: 0, b: 0, a: 1}
+    - _HatchingColor: {r: 1, g: 1, b: 1, a: 1}
     - _HatchingScale: {r: 15, g: 1, b: 0, a: 0}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.056599595, g: 0.035301547, b: 0, a: 0.82}
-    - _SpecColor: {r: 0.3773585, g: 0.26848027, b: 0.115699545, a: 0}
+    - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
