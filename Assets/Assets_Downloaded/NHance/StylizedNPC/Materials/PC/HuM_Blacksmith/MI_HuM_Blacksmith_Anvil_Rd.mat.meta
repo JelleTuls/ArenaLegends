@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 17b17d77f03721c42980090c26769a60
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202515
+  packageName: Modular Stylized Human Blacksmith
+  packageVersion: 1.1
+  assetPath: Assets/NHance/StylizedNPC/Materials/PC/HuM_Blacksmith/MI_HuM_Blacksmith_Anvil_Rd.mat
+  uploadId: 560707
