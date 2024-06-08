@@ -650,10 +650,6 @@ MonoBehaviour:
     Code: 1
   - Name: Team 2
     Code: 2
-  - Name: Team 3
-    Code: 3
-  - Name: Team 4
-    Code: 4
 --- !u!4 &545502839
 Transform:
   m_ObjectHideFlags: 0

@@ -3938,8 +3938,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fc9da3b3d7da4a07b645f30ce43acb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 2590065593329643352, guid: 3894294b075e146daa4ef694f713b923,
-    type: 3}
+  playerPrefabs:
+  - {fileID: 2590065593329643352, guid: 3894294b075e146daa4ef694f713b923, type: 3}
+  - {fileID: 2590065593329643352, guid: 3894294b075e146daa4ef694f713b923, type: 3}
+  - {fileID: 2590065593329643352, guid: 3894294b075e146daa4ef694f713b923, type: 3}
 --- !u!4 &1332809748
 Transform:
   m_ObjectHideFlags: 0

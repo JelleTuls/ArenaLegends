@@ -1,17 +1,3 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PhotonTeamsManager.cs" company="Exit Games GmbH">
-//   Part of: Photon Unity Utilities, 
-// </copyright>
-// <summary>
-// Implements teams in a room/game with help of player properties.
-// </summary>
-// <remarks>
-// Teams are defined by name and code. Change this to get more / different teams.
-// There are no rules when / if you can join a team. You could add this in JoinTeam or something.
-// </remarks>                                                                                           
-// <author>developer@exitgames.com</author>
-// --------------------------------------------------------------------------------------------------------------------
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +8,9 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 namespace Photon.Pun.UtilityScripts
 {
     [Serializable]
+//_____________________________________________________________________________________________________________________
+//CLASS: PHOTON TEAM:
+//---------------------------------------------------------------------------------------------------------------------
     public class PhotonTeam
     {
         public string Name;
@@ -33,6 +22,11 @@ namespace Photon.Pun.UtilityScripts
         }
     }
 
+
+//_____________________________________________________________________________________________________________________
+//CLASS: PHOTON TEAMS MANAGER:
+//---------------------------------------------------------------------------------------------------------------------
+#region Class: PhotonTeamsManager
     /// <summary>
     /// Implements teams in a room/game with help of player properties. Access them by Player.GetTeam extension.
     /// </summary>
@@ -51,6 +45,9 @@ namespace Photon.Pun.UtilityScripts
         #endif
 
         [SerializeField]
+        //_____________________________________________________________________________________________________________________
+        //VARIABLES:
+        //---------------------------------------------------------------------------------------------------------------------
         private List<PhotonTeam> teamsList = new List<PhotonTeam>
         {
             new PhotonTeam { Name = "Blue", Code = 1 },
@@ -91,7 +88,9 @@ namespace Photon.Pun.UtilityScripts
         }
 
         #region MonoBehaviour
-
+        //---------------------------------------------------------------------------------------------------------------------
+        // GENERAL VOIDS:
+        //---------------------------------------------------------------------------------------------------------------------
         private void Awake()
         {
             if (instance == null || ReferenceEquals(this, instance))
@@ -487,7 +486,12 @@ namespace Photon.Pun.UtilityScripts
 
         #endregion
     }
+#endregion Class: PhotonTeamsManager
+    
 
+//_____________________________________________________________________________________________________________________
+//CLASS: PHOTON TEAM EXTENSIONS:
+//---------------------------------------------------------------------------------------------------------------------
     /// <summary>Extension methods for the Player class that make use of PhotonTeamsManager.</summary>
     public static class PhotonTeamExtensions
     {

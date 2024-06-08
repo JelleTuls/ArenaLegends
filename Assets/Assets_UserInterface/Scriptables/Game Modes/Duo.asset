@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Duo
   m_EditorClassIdentifier: 
   _name: duo
-  _maxPlayers: 4
+  _maxPlayers: 6
   _hasTeams: 1
-  _teamSize: 2
+  _teamSize: 3

@@ -76,24 +76,33 @@ namespace KnoxGameStudios
             UpdateCharacterModel(_currentSelection); // Update character image/model based on selection integer
         }
 
-        public void PreviousSelection() // After click previous button --> Get previous item in list
-        {
-            _currentSelection--; // Get the current value of _currentSelection --> Then substract 1
-            if (_currentSelection < 0) // If -1 ends up lower than 0
-            {
-                _currentSelection = _sprites.Length - 1; // Jump to the the very last item of the list
-            }
-            UpdateCharacterSelection(_currentSelection); // Update the character selection based on the new selection value
-        }
+        // public void PreviousSelection() // After click previous button --> Get previous item in list
+        // {
+        //     _currentSelection--; // Get the current value of _currentSelection --> Then substract 1
+        //     if (_currentSelection < 0) // If -1 ends up lower than 0
+        //     {
+        //         _currentSelection = _sprites.Length - 1; // Jump to the the very last item of the list
+        //     }
+        //     UpdateCharacterSelection(_currentSelection); // Update the character selection based on the new selection value
+        // }
 
-        public void NextSelection() // After click next button --> Get previous item in list
+        // public void NextSelection() // After click next button --> Get previous item in list
+        // {
+        //     _currentSelection++; // Get the current value of _currentSelection --> Then add 1
+        //     if (_currentSelection > _sprites.Length - 1) // If +1 ends up higher than the last item in the list
+        //     {
+        //         _currentSelection = 0; // Jump to the beginning of the list
+        //     }
+        //     UpdateCharacterSelection(_currentSelection); // Update the character selection based on the new selection value
+        // }
+
+        public void SelectCharacter(int selectionIndex)
         {
-            _currentSelection++; // Get the current value of _currentSelection --> Then add 1
-            if (_currentSelection > _sprites.Length - 1) // If +1 ends up higher than the last item in the list
-            {
-                _currentSelection = 0; // Jump to the beginning of the list
-            }
-            UpdateCharacterSelection(_currentSelection); // Update the character selection based on the new selection value
+            // Set the current selection to the specified input value
+            _currentSelection = selectionIndex;
+
+            // Update the character selection based on the new selection value
+            UpdateCharacterSelection(_currentSelection);
         }
 
         public void KickPlayer() // Function plays after clicking the kick player button.
@@ -144,16 +153,17 @@ namespace KnoxGameStudios
             }                
         }
 
-        private void UpdateCharacterSelection(int selection) // Function to instantly update the character selections. 
+        private void UpdateCharacterSelection(int selection)
         {
-            Debug.Log($"Updating Photon Custom Property {CHARACTER_SELECTION_NUMBER} for {PhotonNetwork.LocalPlayer.NickName} to {selection}"); // Logging
+            Debug.Log($"Updating Photon Custom Property {CHARACTER_SELECTION_NUMBER} for {PhotonNetwork.LocalPlayer.NickName} to {selection}");
 
-            Hashtable playerSelectionProperty = new Hashtable() // Create new dictionary for the player's selection
+            Hashtable playerSelectionProperty = new Hashtable()
             {
-                {CHARACTER_SELECTION_NUMBER, selection} // # of player & player's selection (# of player means Player1, Player2, Player3 etc.)
+                {CHARACTER_SELECTION_NUMBER, selection}
             };
-            PhotonNetwork.LocalPlayer.SetCustomProperties(playerSelectionProperty); // Store the updated selection to the player's local profile
+            PhotonNetwork.LocalPlayer.SetCustomProperties(playerSelectionProperty);
         }
+
 
         private void UpdateCharacterModel(int selection) // Update visuals based on selection.
         {
