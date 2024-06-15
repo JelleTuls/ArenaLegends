@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 649b07a9152d96244b52d1c9052020c1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202515
+  packageName: Modular Stylized Human Blacksmith
+  packageVersion: 1.1
+  assetPath: Assets/NHance/StylizedNPC/Materials/PC/HuM_Blacksmith/MI_HuM_Blacksmith_Armor_Rd.mat
+  uploadId: 560707

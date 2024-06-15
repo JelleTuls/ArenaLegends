@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 87d1747db5df1c94f8aa4314882fe0fc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 274342
+  packageName: Stylized Fantasy Skeleton Cultist
+  packageVersion: 1.0
+  assetPath: Assets/SkeletonCultist/Meshes/SkeletonCultist.controller
+  uploadId: 637386
