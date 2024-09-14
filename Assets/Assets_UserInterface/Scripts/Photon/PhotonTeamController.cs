@@ -92,41 +92,64 @@ namespace KnoxGameStudios
             AutoAssignPlayerToTeam(PhotonNetwork.LocalPlayer, gameMode); // Auto-assign the local player to a team
         }
         
-        private void HandleSwitchTeam(PhotonTeam newTeam) // Handling players switching to different teams
-        {            
-            if (PhotonNetwork.LocalPlayer.GetPhotonTeam() == null) // If player is not in a team yet
+        private void HandleSwitchTeam(PhotonTeam newTeam)
+        {
+            if (PhotonNetwork.LocalPlayer.GetPhotonTeam() == null)
             {
-                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam(); // Store current team as previous team
-                PhotonNetwork.LocalPlayer.JoinTeam(newTeam); // Join new team (From no team)            
+                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
+                PhotonNetwork.LocalPlayer.JoinTeam(newTeam);
+                
+                // Store the team code in custom properties
+                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
+                {
+                    { "TeamCode", newTeam.Code }
+                };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
             }
-            else if (CanSwitchToTeam(newTeam)) // If there is space in the new team
+            else if (CanSwitchToTeam(newTeam))
             {
-                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam(); // Store current team as previous team
-                PhotonNetwork.LocalPlayer.SwitchTeam(newTeam); // Join new team (Switching from priorTeam)              
+                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
+                PhotonNetwork.LocalPlayer.SwitchTeam(newTeam);
+                
+                // Update custom properties with the new team code
+                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
+                {
+                    { "TeamCode", newTeam.Code }
+                };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
             }
         }
 
-        private void AutoAssignPlayerToTeam(Player player, GameMode gameMode) // Automatically assign a player to any available team
+        private void AutoAssignPlayerToTeam(Player player, GameMode gameMode)
         {
-            foreach (PhotonTeam team in _roomTeams) // Loop through all teams
+            foreach (PhotonTeam team in _roomTeams)
             {
-                int teamPlayerCount = PhotonTeamsManager.Instance.GetTeamMembersCount(team.Code); // Get the current player count in the team
+                int teamPlayerCount = PhotonTeamsManager.Instance.GetTeamMembersCount(team.Code);
 
-                if (teamPlayerCount < gameMode.TeamSize) // Check if max players in team is reached
+                if (teamPlayerCount < gameMode.TeamSize)
                 {
-                    Debug.Log($"Auto assigned {player.NickName} to {team.Name}"); // Logging
-                    if (player.GetPhotonTeam() == null) // If player is not in a team yet
+                    Debug.Log($"Auto assigned {player.NickName} to {team.Name}");
+
+                    if (player.GetPhotonTeam() == null)
                     {
-                        player.JoinTeam(team.Code); // Join team
+                        player.JoinTeam(team.Code);
                     }
-                    else if (player.GetPhotonTeam().Code != team.Code) // If player is already in a team
+                    else if (player.GetPhotonTeam().Code != team.Code)
                     {
-                        player.SwitchTeam(team.Code); // Switch team
+                        player.SwitchTeam(team.Code);
                     }
+                    
+                    // Store the team code in custom properties
+                    ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
+                    {
+                        { "TeamCode", team.Code }
+                    };
+                    player.SetCustomProperties(customProperties);
                     break;
                 }
             }
-        } 
+        }
+
 
         //_____________________________________________________________________________________________________________________
         //(BOOLEAN)

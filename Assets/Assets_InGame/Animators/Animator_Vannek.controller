@@ -894,7 +894,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Locomotion
-  m_Speed: 1.5
+  m_Speed: 0.8
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 7457481912442355244}
@@ -912,8 +912,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -5252816984213320552, guid: 8119e792d5fd2a44486be8a3475be91e,
-    type: 3}
+  m_Motion: {fileID: 7400000, guid: 8335eb10c3b5441bebfa81c1d06985af, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
