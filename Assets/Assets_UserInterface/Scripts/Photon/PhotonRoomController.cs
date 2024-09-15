@@ -63,7 +63,6 @@ namespace KnoxGameStudios
             {
                 _startGame = false;
                 
-                Debug.Log("Loading level!");
                 PhotonNetwork.LoadLevel("PVP_Arena_Mobile"); // _gameSceneIndex
             }            
         }
@@ -123,10 +122,29 @@ namespace KnoxGameStudios
 
         private void HandleStartGame()
         {
-            Hashtable startRoomProperty = new Hashtable()
-            { {START_GAME, true} };
-            PhotonNetwork.CurrentRoom.SetCustomProperties(startRoomProperty);
+            if (PhotonNetwork.IsMasterClient)
+            {
+                // Create a Hashtable to hold the custom room properties
+                Hashtable startRoomProperty = new Hashtable();
+                
+                // Set the START_GAME property to true
+                startRoomProperty.Add(START_GAME, true);
+
+                // Log the update for debugging purposes
+                Debug.Log("Setting START_GAME property to true and updating the room properties.");
+
+                // Update the custom properties of the current room
+                PhotonNetwork.CurrentRoom.SetCustomProperties(startRoomProperty);
+
+                // Additional safety log to ensure the properties are updated
+                Debug.Log("Room properties have been updated.");
+            }
+            else
+            {
+                Debug.LogWarning("Attempted to start the game, but the player is not the master client.");
+            }
         }
+
 
         private void HandleKickPlayer(Player kickedPlayer)
         {
@@ -262,20 +280,38 @@ namespace KnoxGameStudios
 
         public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
         {
-            object startGameObject;
-            if (propertiesThatChanged.TryGetValue(START_GAME, out startGameObject))
+            if (propertiesThatChanged.ContainsKey(START_GAME))
             {
-                _startGame = (bool)startGameObject;
-                if (_startGame)
+                if (propertiesThatChanged[START_GAME] is bool startGame)
                 {
-                    _currentCountDown = GAME_COUNT_DOWN;
+                    _startGame = startGame;
+
+                    if (_startGame)
+                    {
+                        _currentCountDown = GAME_COUNT_DOWN;
+                        Debug.Log("Game is starting. Countdown initiated.");
+
+                        if (PhotonNetwork.IsMasterClient)
+                        {
+                            PhotonNetwork.CurrentRoom.IsVisible = false;
+                            PhotonNetwork.CurrentRoom.IsOpen = false;
+                            Debug.Log("Room is now closed and hidden as the game is starting.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("START_GAME flag is set to false.");
+                    }
                 }
-                if (_startGame && PhotonNetwork.IsMasterClient)
+                else
                 {
-                    PhotonNetwork.CurrentRoom.IsVisible = false;
-                    PhotonNetwork.CurrentRoom.IsOpen = false;
+                    Debug.LogError("START_GAME property exists but is not a boolean. Value: " + propertiesThatChanged[START_GAME]);
                 }
-            }            
+            }
+            else
+            {
+                Debug.LogError("START_GAME property was updated but is missing from the properties.");
+            }
         }
         #endregion
     }

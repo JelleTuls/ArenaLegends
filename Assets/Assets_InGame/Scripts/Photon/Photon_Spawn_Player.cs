@@ -21,41 +21,45 @@ public class Photon_Spawn_Player : MonoBehaviour
         if (PhotonNetwork.InRoom)
         {
             Debug.Log("We are in a Photon room.");
+            Debug.Log($"Current Room Name: {PhotonNetwork.CurrentRoom.Name}, Players in Room: {PhotonNetwork.CurrentRoom.PlayerCount}");
+
+            // Log all custom properties for debugging
+            Debug.Log("Listing all custom properties:");
+            foreach (var prop in PhotonNetwork.LocalPlayer.CustomProperties)
+            {
+                Debug.Log($"Property: {prop.Key} = {prop.Value}");
+            }
+
+            // Retrieve the selected character index from Photon custom properties
+            if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("CSN", out object selectedIndexObject))
+            {
+                int selectedIndex = (int)selectedIndexObject;
+                Debug.Log($"Character selection index found: {selectedIndex}");
+
+                // Ensure the index is within the bounds of the array
+                if (selectedIndex >= 0 && selectedIndex < playerPrefabs.Length)
+                {
+                    Vector3 spawnPosition = new Vector3(0f, 0f, 0f);
+                    GameObject playerInstance = PhotonNetwork.Instantiate(playerPrefabs[selectedIndex].name, spawnPosition, Quaternion.identity);
+                    Debug.Log($"Instantiated player prefab: {playerPrefabs[selectedIndex].name} at {spawnPosition}");
+
+                    // Set the PhotonView TagObject for the instantiated player to track it
+                    PhotonNetwork.LocalPlayer.TagObject = playerInstance;
+                    Debug.Log("TagObject assigned to player instance.");
+                }
+                else
+                {
+                    Debug.LogError("Selected index is out of bounds of the playerPrefabs array.");
+                }
+            }
+            else
+            {
+                Debug.LogError("Character selection index not found in custom properties.");
+            }
         }
         else
         {
             Debug.LogError("Not in a Photon room.");
-            return;
-        }
-
-        // Log all custom properties for debugging
-        Debug.Log("Listing all custom properties:");
-        foreach (var prop in PhotonNetwork.LocalPlayer.CustomProperties)
-        {
-            Debug.Log($"Property: {prop.Key} = {prop.Value}");
-        }
-
-        // Retrieve the selected character index from Photon custom properties
-        if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("CSN", out object selectedIndexObject))
-        {
-            int selectedIndex = (int)selectedIndexObject;
-            Debug.Log($"Character selection index found: {selectedIndex}");
-
-            // Ensure the index is within the bounds of the array
-            if (selectedIndex >= 0 && selectedIndex < playerPrefabs.Length)
-            {
-                Vector3 spawnPosition = new Vector3(0f, 0f, 0f);
-                PhotonNetwork.Instantiate(playerPrefabs[selectedIndex].name, spawnPosition, Quaternion.identity);
-                Debug.Log($"Instantiated player prefab: {playerPrefabs[selectedIndex].name}");
-            }
-            else
-            {
-                Debug.LogError("Selected index is out of bounds of the playerPrefabs array.");
-            }
-        }
-        else
-        {
-            Debug.LogError("Character selection index not found in custom properties.");
         }
     }
 

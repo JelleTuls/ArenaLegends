@@ -3,7 +3,8 @@ using System;
 using System.Collections;
 using UnityEngine.UI;
 using Photon.Pun;
-using CJ;
+using Photon.Realtime; // This line imports the Photon Player class
+using Photon.Pun.UtilityScripts; // For PhotonTeamsManager
 using TMPro;
 
 //_____________________________________________________________________________________________________________________
@@ -42,7 +43,7 @@ public class Player_Handle_Target : MonoBehaviour
 
     public void Update()
     {   
-        if(view.IsMine){ // Only if the view isMine: Play the upddate void
+        if(view.IsMine){ // Only if the view isMine: Play the update void
             isPreviousTarget = isTarget; // Store previous target PER FRAME
         }
     }
@@ -79,15 +80,76 @@ public class Player_Handle_Target : MonoBehaviour
 
     public void FTarget() // Scan for enemies within range (Select most nearby):
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, checkRadius, checkLayers); // Create list of objects within range
-        Array.Sort(colliders, new TargetComparer(transform)); // Order based on distance:
-        isTarget = GameObject.Find(colliders[0].name); // Set Active Target ==> isTarget (Most nearby target/1st from list)
+        // First, try to find players from a different team
+        bool foundOpponent = TryFindOpponentByTeam();
+        
+        if (!foundOpponent)
+        {
+            // No opponent found from the other team, proceed with original logic
+            Debug.Log("No players found in the opposing team. Searching for targets based on layers.");
+            Collider[] colliders = Physics.OverlapSphere(transform.position, checkRadius, checkLayers); // Create list of objects within range
+            
+            if (colliders.Length > 0)
+            {
+                Array.Sort(colliders, new TargetComparer(transform)); // Order based on distance:
+                isTarget = GameObject.Find(colliders[0].name); // Set Active Target ==> isTarget (Most nearby target/1st from list)
 
-        targetPortraitImage.sprite = isTarget.GetComponent<Player_Handle_Stats>().myPortrait; // Set target visual sprite == Portrait sprite from target's Handler_Stats
-        targetPortraitClass.sprite = isTarget.GetComponent<Player_Handle_Stats>().myClass; // Set target visual sprite == Class sprite from target's Handler_Stats
-        targetSelection.SetActive(true); // Activate taret visual object
+                targetPortraitImage.sprite = isTarget.GetComponent<Player_Handle_Stats>().myPortrait; // Set target visual sprite == Portrait sprite from target's Handler_Stats
+                targetPortraitClass.sprite = isTarget.GetComponent<Player_Handle_Stats>().myClass; // Set target visual sprite == Class sprite from target's Handler_Stats
+                targetSelection.SetActive(true); // Activate taret visual object
 
-        targetMaxHealth = isTarget.GetComponent<Player_Handle_Stats>().myMaxHealth; // Get target's MaxHealth
+                targetMaxHealth = isTarget.GetComponent<Player_Handle_Stats>().myMaxHealth; // Get target's MaxHealth
+            }
+            else
+            {
+                Debug.Log("No target found within the search radius.");
+            }
+        }
+    }
+
+    private bool TryFindOpponentByTeam()
+    {
+        PhotonTeam localPlayerTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam(); // Get the local player's team
+
+        // Check if the player has a team assigned
+        if (localPlayerTeam == null)
+        {
+            Debug.LogWarning("Local player is not assigned to any team.");
+            return false;
+        }
+
+        // Search for players from a different team
+        foreach (Player otherPlayer in PhotonNetwork.PlayerListOthers)
+        {
+            PhotonTeam otherPlayerTeam = otherPlayer.GetPhotonTeam();
+            if (otherPlayerTeam != null && otherPlayerTeam.Code != localPlayerTeam.Code) // Check if they are on a different team
+            {
+                GameObject opponent = otherPlayer.TagObject as GameObject;
+                if (opponent != null && Vector3.Distance(transform.position, opponent.transform.position) <= checkRadius)
+                {
+                    isTarget = opponent; // Set the opponent as the current target
+                    Debug.Log($"Found opponent on team {otherPlayerTeam.Name}");
+
+                    targetPortraitImage.sprite = isTarget.GetComponent<Player_Handle_Stats>().myPortrait;
+                    targetPortraitClass.sprite = isTarget.GetComponent<Player_Handle_Stats>().myClass;
+                    targetSelection.SetActive(true);
+                    targetMaxHealth = isTarget.GetComponent<Player_Handle_Stats>().myMaxHealth;
+                    return true;
+                }
+            }
+        }
+
+        // Log message if no opponent found
+        if (localPlayerTeam.Name == "Team 1")
+        {
+            Debug.Log("No players found in team 2.");
+        }
+        else if (localPlayerTeam.Name == "Team 2")
+        {
+            Debug.Log("No players found in team 1.");
+        }
+
+        return false;
     }
 
     //_____________________________________________________________________________________________________________________
@@ -107,7 +169,6 @@ public class Player_Handle_Target : MonoBehaviour
         // Assign the camera to the Billboard script
         Object_Adjustments_Billboard Object_Adjustments_Billboard = spawnedObject.GetComponent<Object_Adjustments_Billboard>();
         Object_Adjustments_Billboard.cam = mainCamera.transform; // Assign the camera's Transform
-
 
         // Pass the target's transform to the Shield_Break_Destroy script, which handles position updating
         Object_Adjustments_FollowAndDestroy shieldDestroyScript = spawnedObject.GetComponent<Object_Adjustments_FollowAndDestroy>();
@@ -140,6 +201,5 @@ public class Player_Handle_Target : MonoBehaviour
     {
         Gizmos.DrawWireSphere(transform.position, checkRadius);
     }
-    }
 }
-
+}
