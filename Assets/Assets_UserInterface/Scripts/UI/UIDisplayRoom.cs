@@ -1,124 +1,211 @@
-﻿// Necessary using directives for Photon and Unity functionalities
+﻿/*
+UIDisplayRoom.cs
+Purpose:
+    The UIDisplayRoom script manages the user interface elements associated with the room, 
+    such as the room title, buttons (start, ready, exit), and provides logic for handling 
+    when players are ready to start the game.
+
+Key functionalities:
+    - UI Control: It manages which buttons (start or ready) are visible based on the 
+    player’s role (master client or regular player).
+    - PhotonView Integration: It ensures the player’s actions (e.g., clicking "ready") are 
+    synchronized across the network using Photon’s RPC (Remote Procedure Call).
+    - Event Handling: It subscribes to and responds to events triggered by the PhotonRoomController 
+    to update the UI when players join or leave the room, when the countdown starts, or when the 
+    master client changes.
+    - Ready/Start Mechanism:
+        Non-master clients have a "Ready" button to indicate that they are ready to play.
+        The master client has a "Start" button and can start the game once all players are ready.
+        The master client also receives an RPC notification when a non-master player clicks "Ready."
+
+Differences:
+    This script is mainly focused on the UI and player readiness tracking. It does not handle the game 
+    logic (e.g., loading scenes or room setup) but acts on instructions from the PhotonRoomController.
+*/
+
+using UnityEngine;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 using System;
 using TMPro;
-using UnityEngine;
 
 namespace KnoxGameStudios
 {
-    // UIDisplayRoom class to handle UI updates related to room status in a multiplayer game
-    public class UIDisplayRoom : MonoBehaviour
+    public class UIDisplayRoom : MonoBehaviourPunCallbacks
     {
-        // Serialized fields to be assigned in the Unity Editor
-        [SerializeField] private TMP_Text _roomTitleText;  // Text component to display the room title
-        [SerializeField] private GameObject _startButton;  // Button to start the game
-        [SerializeField] private GameObject _exitButton;  // Button to leave the room
-        [SerializeField] private GameObject _roomContainer;  // Container for room-related UI elements
-        [SerializeField] private GameObject[] _hideObjects;  // Array of objects to hide on joining a room
-        [SerializeField] private GameObject[] _showObjects;  // Array of objects to show on leaving a room
+         public static UIDisplayRoom Instance { get; private set; }
+        
+        [SerializeField] private TMP_Text _roomTitleText;
+        [SerializeField] private GameObject _startButton;
+        [SerializeField] private GameObject _readyButton;
+        [SerializeField] private GameObject _exitButton;
+        [SerializeField] private GameObject _roomContainer;
 
-        // Static Action events to notify when the game starts or when a player leaves the room
         public static Action OnStartGame = delegate { };
         public static Action OnLeaveRoom = delegate { };
 
-        // Method called when the script instance is being loaded
+        private const string PLAYER_READY = "PlayerReady"; // Key for CustomProperties to store ready status
+
+        private PhotonView photonView;
+
         private void Awake()
         {
-            // Subscribe to PhotonRoomController events
+            if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject); // Prevents multiple instances
+        }
+        else
+        {
+            Instance = this;
+        }
+        
+            // Ensure that the PhotonView is attached and accessible
+            photonView = GetComponent<PhotonView>();
+            if (photonView == null)
+            {
+                Debug.LogError("PhotonView component is missing from UIDisplayRoom.");
+            }
+
             PhotonRoomController.OnJoinRoom += HandleJoinRoom;
             PhotonRoomController.OnRoomLeft += HandleRoomLeft;
             PhotonRoomController.OnMasterOfRoom += HandleMasterOfRoom;
             PhotonRoomController.OnCountingDown += HandleCountingDown;
         }
 
-        // Method called when the script instance is being destroyed
         private void OnDestroy()
         {
-            // Unsubscribe from PhotonRoomController events
             PhotonRoomController.OnJoinRoom -= HandleJoinRoom;
             PhotonRoomController.OnRoomLeft -= HandleRoomLeft;
             PhotonRoomController.OnMasterOfRoom -= HandleMasterOfRoom;
             PhotonRoomController.OnCountingDown -= HandleCountingDown;
         }
 
-        // Method to handle actions when a player joins a room
         private void HandleJoinRoom(GameMode gameMode)
         {
-            // Set the room title to the game mode from the room's custom properties
             _roomTitleText.SetText(PhotonNetwork.CurrentRoom.CustomProperties["GAMEMODE"].ToString());
-
-            // Show the exit button and room container
             _exitButton.SetActive(true);
             _roomContainer.SetActive(true);
-
-            // Hide objects specified in the _hideObjects array
-            foreach (GameObject obj in _hideObjects)
-            {
-                obj.SetActive(false);
-            }
+            ShowReadyButton();
         }
 
-        // Method to handle actions when a player leaves a room
         private void HandleRoomLeft()
         {
-            // Set the room title to "JOINING ROOM"
-            _roomTitleText.SetText("JOINING ROOM");
-
-            // Hide the start and exit buttons and room container
             _startButton.SetActive(false);
+            _readyButton.SetActive(false);
             _exitButton.SetActive(false);
-            _roomContainer.SetActive(false);
-
-            // Show objects specified in the _showObjects array
-            foreach (GameObject obj in _showObjects)
-            {
-                obj.SetActive(true);
-            }
+            _roomTitleText.SetText("JOINING ROOM");
         }
 
-        // Method to handle actions when a player becomes the master of the room
         private void HandleMasterOfRoom(Player masterPlayer)
         {
-            // Set the room title to the game mode from the room's custom properties
-            _roomTitleText.SetText(PhotonNetwork.CurrentRoom.CustomProperties["GAMEMODE"].ToString());
-
-            // If the local player is the master, show the start button, otherwise hide it
-            if (PhotonNetwork.LocalPlayer.Equals(masterPlayer))
-            {
-                _startButton.SetActive(true);
-            }
-            else
-            {
-                _startButton.SetActive(false);
-            }
+            ShowReadyButton();
         }
 
-        // Method to handle actions when the game is counting down to start
         private void HandleCountingDown(float count)
         {
-            // Hide the start and exit buttons
             _startButton.SetActive(false);
+            _readyButton.SetActive(false);
             _exitButton.SetActive(false);
-
-            // Set the room title to the countdown timer
             _roomTitleText.SetText(count.ToString("F0"));
         }
 
-        // Method to handle leaving the room, invoked by a UI button
-        public void LeaveRoom()
+        public void ShowReadyButton()
         {
-            // Invoke the OnLeaveRoom event
-            OnLeaveRoom?.Invoke();
+            _startButton.SetActive(false);
+            _readyButton.SetActive(true);
         }
 
-        // Method to handle starting the game, invoked by a UI button
+        private void ShowPlayButton()
+        {
+            _startButton.SetActive(true);
+            _readyButton.SetActive(false);
+        }
+
+        public void ReadyUp()
+        {
+            if (photonView == null)
+            {
+                Debug.LogError("PhotonView is null in ReadyUp function.");
+                return;
+            }
+
+            // Set the player's "ready" status in their CustomProperties
+            Hashtable readyProperty = new Hashtable { { PLAYER_READY, true } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(readyProperty);
+
+            // Hide the ready button
+            _readyButton.SetActive(false);
+
+            // If the local player is the master client, show the Play button
+            if (PhotonNetwork.IsMasterClient)
+            {
+                ShowPlayButton();
+            }
+
+            // Notify the master client that this player is ready
+            photonView.RPC("NotifyMasterClientReady", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.NickName);
+        }
+
+        [PunRPC]
+        private void NotifyMasterClientReady(string playerName)
+        {
+            // Log the player that clicked ready on the master client
+            Debug.Log($"{playerName} is ready.");
+        }
+
         public void StartGame()
         {
-            // Log the start of the game and invoke the OnStartGame event
-            Debug.Log("Starting game...");
-            OnStartGame?.Invoke();
+            if (PhotonNetwork.IsMasterClient)
+            {
+                bool allPlayersReady = CheckAllPlayersReady();
+
+                if (allPlayersReady)
+                {
+                    Debug.Log("All players are ready. Starting the game...");
+                    OnStartGame?.Invoke();
+                }
+                else
+                {
+                    Debug.Log("Not all players are ready. Waiting...");
+                }
+            }
         }
+
+        private bool CheckAllPlayersReady()
+        {
+            foreach (Player player in PhotonNetwork.CurrentRoom.Players.Values)
+            {
+                if (player.CustomProperties.TryGetValue(PLAYER_READY, out object isReady))
+                {
+                    if (!(bool)isReady)
+                    {
+                        Debug.Log("Player not ready: " + player.NickName);
+                        return false;
+                    }
+                }
+                else
+                {
+                    Debug.Log("Player not ready: " + player.NickName);
+                    return false;
+                }
+            }
+
+            // If all players are ready, return true
+            return true;
+        }
+
+        // public override void OnPlayerEnteredRoom(Player newPlayer)
+        // {
+        //     base.OnPlayerEnteredRoom(newPlayer);
+        //     Debug.Log($"Player joined: {newPlayer.NickName}");
+        //     ShowReadyButton();
+        // }
+
+        // public override void OnPlayerLeftRoom(Player otherPlayer)
+        // {
+        //     base.OnPlayerLeftRoom(otherPlayer);
+        //     Debug.Log($"Player left: {otherPlayer.NickName}");
+        // }
     }
 }

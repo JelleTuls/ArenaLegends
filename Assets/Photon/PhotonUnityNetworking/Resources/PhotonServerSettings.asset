@@ -43,6 +43,13 @@ MonoBehaviour:
   - RPCSetUsernameText
   - RPCShowSelected
   - RPCKickPlayer
+  - NotifyMasterClientReady
+  - LoadSceneForAll
+  - StartCountdown
+  - UpdateCountdownForAll
+  - NotifyAllPlayersGameStart
+  - UpdatePlayerUIForAll
+  - UpdatePlayerUIForOthers
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
