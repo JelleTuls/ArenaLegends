@@ -8,22 +8,37 @@ namespace KnoxGameStudios
 {
     public class UIDisplayTeam : MonoBehaviour
     {
+//_____________________________________________________________________________________________________________________
+// VARIABLES
+//---------------------------------------------------------------------------------------------------------------------
+        // REFERENCES
         [SerializeField] private UITeam _uiTeamPrefab;
         [SerializeField] private List<UITeam> _uiTeams;
         [SerializeField] private Transform _teamContainer;
 
+        // PUBLIC STATIC ACTIONS
         public static Action<Player, PhotonTeam> OnAddPlayerToTeam = delegate { };
         public static Action<Player> OnRemovePlayerFromTeam = delegate { };
 
+//_____________________________________________________________________________________________________________________
+// START FUNCTIONS
+//---------------------------------------------------------------------------------------------------------------------
         private void Awake()
         {
+            // Initialize Handle Methods
             PhotonTeamController.OnCreateTeams += HandleCreateTeams;
             PhotonTeamController.OnSwitchTeam += HandleSwitchTeam;
             PhotonTeamController.OnRemovePlayer += HandleRemovePlayer;
             PhotonTeamController.OnClearTeams += HandleClearTeams;
+
+            // Create a new list <UITeam> from start
             _uiTeams = new List<UITeam>();
         }
 
+
+//_____________________________________________________________________________________________________________________
+// ON DESTROY
+//---------------------------------------------------------------------------------------------------------------------
         private void OnDestroy()
         {
             PhotonTeamController.OnCreateTeams -= HandleCreateTeams;
@@ -32,6 +47,10 @@ namespace KnoxGameStudios
             PhotonTeamController.OnClearTeams -= HandleClearTeams;
         }
 
+
+//_____________________________________________________________________________________________________________________
+// HANDLE METHODS
+//---------------------------------------------------------------------------------------------------------------------
         private void HandleCreateTeams(List<PhotonTeam> teams, GameMode gameMode)
         {
             // Find the placeholders at the start
@@ -102,11 +121,14 @@ namespace KnoxGameStudios
             OnAddPlayerToTeam?.Invoke(player, newTeam);            
         }
 
+
         private void HandleRemovePlayer(Player otherPlayer)
         {
             OnRemovePlayerFromTeam?.Invoke(otherPlayer);
         }
 
+
+        // Function to Remove the uiTeam gameObject
         private void HandleClearTeams()
         {
             foreach (UITeam uiTeam in _uiTeams)

@@ -12125,13 +12125,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73aa801dda3cd1640a7f54af98d9d067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerProfilePrefab: {fileID: 3156576202742954267, guid: 563ba8154dc9946e99cea83c0d986a02,
+  playerProfilePrefab: {fileID: 3156576202742954267, guid: f22578ece7078cc4eba39e6a1bd08aa1,
+    type: 3}
+  _Photon_Manager_Spawn: {fileID: 4404803463414328173, guid: e79bbb77887fd4cf8a87feb8b0a5f1d2,
     type: 3}
   _selectedGameMode: {fileID: 0}
   _availableGameModes:
   - {fileID: 11400000, guid: 03499d883b4de544a809c426e796a97f, type: 2}
   _startGame: 1
-  _currentCountDown: 0
+  _currentCountDown: 10
   _gameSceneIndex: 2
 --- !u!114 &1488061043
 MonoBehaviour:
@@ -12150,6 +12152,9 @@ MonoBehaviour:
   _readyButton: {fileID: 2081041724}
   _exitButton: {fileID: 392825697}
   _roomContainer: {fileID: 1140536125}
+  roomControllerObject: {fileID: 1488061040}
+  _hideObjects: []
+  _showObjects: []
 --- !u!1 &1527277496
 GameObject:
   m_ObjectHideFlags: 0

@@ -79,13 +79,13 @@ namespace CJ
 
                 if(Physics.Raycast(rayCastCameraCollision, out hitCameraCollision, 
                     cameraDistanceStart * 8.5f)){ // Check if RayCast hit something at range: rayCastDistance * 8.5f
-                    if(hitCameraCollision.collider.tag == "isObstacle"){ // Check if object's tag being hit == isObstacle
+                    if (hitCameraCollision.collider != null && hitCameraCollision.collider.tag == "isObstacle") 
+                    {
+                        // Check if object's tag being hit == isObstacle
                         hitFlag = true; // Signal hit
                         hitCollision = hitCameraCollision.transform.gameObject; // Store hitted object
-                            
-                        // cameraDistance = (hitCameraCollision.distance/8.5f);
-                            
-                        hitCollision.GetComponent<MeshRenderer>().enabled = false; // Deactivate MeshRenderer of collided object (With isObstable tag)
+                                            
+                        hitCollision.GetComponent<MeshRenderer>().enabled = false; // Deactivate MeshRenderer of collided object
                     }
                     else
                     {
@@ -97,7 +97,7 @@ namespace CJ
                     {
                         previousCollision.GetComponent<MeshRenderer>().enabled = true; // PreviousCollision become visible again
                     }
-                if(hitCameraCollision.collider.tag == "isWall"){ // If the hitted object.tag == Wall
+                if(hitCameraCollision.collider != null && hitCameraCollision.collider.tag == "isWall"){ // If the hitted object.tag == Wall
                         cameraDistance = (hitCameraCollision.distance/8.5f); // Move camera closer to the player
                     }
                 previousCollision = hitCollision; // After all calculations: Set previousCollision to current collision

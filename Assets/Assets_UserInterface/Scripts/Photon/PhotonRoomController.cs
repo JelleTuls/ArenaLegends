@@ -29,25 +29,40 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
 using ExitGames.Client.Photon;
+using CJ;
 
 namespace KnoxGameStudios
 {
     public class PhotonRoomController : MonoBehaviourPunCallbacks
     {
+//_____________________________________________________________________________________________________________________
+// VARIABLES
+//---------------------------------------------------------------------------------------------------------------------
+        // GAMEOBJECT:
         [SerializeField] private GameObject playerProfilePrefab; // Reference to the Player Profile prefab for instantiation
+        [SerializeField] private GameObject _Photon_Manager_Spawn; // Reference to the prefab you want to instantiate
 
+        // GAMEMODE:
         [SerializeField] private GameMode _selectedGameMode;
         [SerializeField] private GameMode[] _availableGameModes;
+        
+        // BOOL:
         [SerializeField] private bool _startGame;
+        
+        // FLOAT
         [SerializeField] private float _currentCountDown;
+        private const float GAME_COUNT_DOWN = 10f;
+
+        // INT
         [SerializeField] private int _gameSceneIndex;
 
+        // STRING
         private const string GAME_MODE = "GAMEMODE";
         private const string START_GAME = "STARTGAME";
         private const string PLAYER_READY = "PlayerReady";
         private const string SCENE_NAME = "PVP_Arena_Mobile"; // Your target scene name
-        private const float GAME_COUNT_DOWN = 10f;
 
+        // STATIC
         public static Action<GameMode> OnJoinRoom = delegate { };
         public static Action<bool> OnRoomStatusChange = delegate { };
         public static Action OnRoomLeft = delegate { };
@@ -55,6 +70,10 @@ namespace KnoxGameStudios
         public static Action<Player> OnMasterOfRoom = delegate { };
         public static Action<float> OnCountingDown = delegate { };
 
+
+//_____________________________________________________________________________________________________________________
+// START FUNCTIONS
+//---------------------------------------------------------------------------------------------------------------------
         private void Awake()
         {
             UIGameMode.OnGameModeSelected += HandleGameModeSelected;
@@ -66,8 +85,14 @@ namespace KnoxGameStudios
             UIPlayerSelection.OnKickPlayer += HandleKickPlayer;
 
             PhotonNetwork.AutomaticallySyncScene = true;
+
+            _startGame = false;
         }
 
+
+//_____________________________________________________________________________________________________________________
+// ON DESTROY:
+//---------------------------------------------------------------------------------------------------------------------
         private void OnDestroy()
         {
             UIGameMode.OnGameModeSelected -= HandleGameModeSelected;
@@ -79,6 +104,10 @@ namespace KnoxGameStudios
             UIPlayerSelection.OnKickPlayer -= HandleKickPlayer;
         }
 
+
+//_____________________________________________________________________________________________________________________
+// VOID UPDATE
+//---------------------------------------------------------------------------------------------------------------------
         private void Update()
         {
             // This method handles the game countdown logic for starting the game.
@@ -91,16 +120,19 @@ namespace KnoxGameStudios
             }
             else
             {
+                Debug.Log("STARTING GAME!!");
                 _startGame = false;
-                // Load the game scene only if the player is the Master Client
-                if (PhotonNetwork.IsMasterClient)
-                {
-                    PhotonNetwork.LoadLevel(SCENE_NAME); // Load the target game scene
-                }
+                
+                Debug.Log("Loading Arena Scene");
+                PhotonNetwork.AutomaticallySyncScene = true;
+                PhotonNetwork.LoadLevel(SCENE_NAME); // Load the target game scene
             }
         }
 
-        #region Handle Methods
+
+//_____________________________________________________________________________________________________________________
+// HANDLE METHODS
+//---------------------------------------------------------------------------------------------------------------------
         private void HandleGameModeSelected(GameMode gameMode)
         {
             if (!PhotonNetwork.IsConnectedAndReady) return;
@@ -110,6 +142,7 @@ namespace KnoxGameStudios
             Debug.Log($"Joining new {_selectedGameMode.Name} game");
             JoinPhotonRoom();
         }
+
 
         private void HandleRoomInviteAccept(string roomName)
         {
@@ -129,6 +162,7 @@ namespace KnoxGameStudios
             }
         }
 
+
         private void HandleLobbyJoined()
         {
             string roomName = PlayerPrefs.GetString("PHOTONROOM");
@@ -139,6 +173,7 @@ namespace KnoxGameStudios
             }
         }
 
+
         private void HandleLeaveRoom()
         {
             if (PhotonNetwork.InRoom)
@@ -148,14 +183,18 @@ namespace KnoxGameStudios
             }
         }
 
+
         private void HandleGetRoomStatus()
         {
             OnRoomStatusChange?.Invoke(PhotonNetwork.InRoom);
         }
 
+        // Function invoked by the "START BUTTON" & "READY BUTTON"
         private void HandleStartGame()
         {
-            if (PhotonNetwork.IsMasterClient)
+        // If: IsMasterClient ==> Start Game
+        // If: !IsMasterClient ==> Ready Up
+        if (PhotonNetwork.IsMasterClient)
             {
                 if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
                 {
@@ -175,21 +214,21 @@ namespace KnoxGameStudios
                     StartGameAsMaster();
                 }
             }
-            else
+        }
+
+
+        private void HandleKickPlayer(Player kickedPlayer)
+        {
+            if (PhotonNetwork.LocalPlayer.Equals(kickedPlayer))
             {
-                SendReadyStatusToMaster();
+                HandleLeaveRoom();
             }
         }
 
-        private void StartGameAsMaster()
-        {
-            Hashtable startRoomProperty = new Hashtable
-            {
-                {START_GAME, true}
-            };
-            PhotonNetwork.CurrentRoom.SetCustomProperties(startRoomProperty);
-        }
 
+//_____________________________________________________________________________________________________________________
+// STARTING GAME FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         private bool AllPlayersReady()
         {
             foreach (Player player in PhotonNetwork.PlayerList)
@@ -202,36 +241,50 @@ namespace KnoxGameStudios
             return true; // All players are ready
         }
 
-        private void SendReadyStatusToMaster()
-        {
-            Hashtable playerReadyProperty = new Hashtable
-            {
-                {PLAYER_READY, true}
-            };
-            PhotonNetwork.LocalPlayer.SetCustomProperties(playerReadyProperty);
-            Debug.Log("Ready status sent to the master client.");
-        }
 
-        private void HandleKickPlayer(Player kickedPlayer)
+        public void SendReadyStatusToMaster()
         {
-            if (PhotonNetwork.LocalPlayer.Equals(kickedPlayer))
+            // Check if the "CSN" property exists and is not null or empty
+            if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("CSN", out object selectedIndexObject) && selectedIndexObject != null)
             {
-                HandleLeaveRoom();
+                Hashtable playerReadyProperty = new Hashtable
+                {
+                    { PLAYER_READY, true }
+                };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(playerReadyProperty);
+                Debug.Log("Ready status sent to the master client.");
+                SpawnPhotonManager();
+            }
+            else
+            {
+                Debug.LogWarning("CSN property is either null or does not exist. Ready status not sent.");
             }
         }
-        #endregion
 
-        #region Private Methods
-        private void JoinPhotonRoom()
+
+        private void StartGameAsMaster()
         {
-            Hashtable expectedCustomRoomProperties = new Hashtable
+            // Set the start game property to true for all players
+            Hashtable startRoomProperty = new Hashtable()
             {
-                {GAME_MODE, _selectedGameMode.Name}
+                { START_GAME, true }
             };
-
-            PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, 0);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(startRoomProperty);
         }
 
+
+
+        private void AutoStartGame()
+        {
+            if (PhotonNetwork.CurrentRoom.PlayerCount >= _selectedGameMode.MaxPlayers)
+                Debug.Log("The room is full. Waiting for the master client to start the game.");
+                // The game will now wait for the Master Client to manually start it.
+        }
+
+
+//_____________________________________________________________________________________________________________________
+// ROOM FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         private void CreatePhotonRoom()
         {
             string roomName = Guid.NewGuid().ToString();
@@ -239,39 +292,35 @@ namespace KnoxGameStudios
 
             PhotonNetwork.JoinOrCreateRoom(roomName, ro, TypedLobby.Default);
         }
+        
+        
+        private void JoinPhotonRoom()
+        {
+            Hashtable expectedCustomRoomProperties = new Hashtable
+            { {GAME_MODE, _selectedGameMode.Name} };
+
+            PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, 0);
+        }
+
 
         private RoomOptions GetRoomOptions()
         {
-            RoomOptions ro = new RoomOptions
-            {
-                IsOpen = true,
-                IsVisible = true,
-                MaxPlayers = _selectedGameMode.MaxPlayers
-            };
+            RoomOptions ro = new RoomOptions();
+            ro.IsOpen = true;
+            ro.IsVisible = true;
+            ro.MaxPlayers = _selectedGameMode.MaxPlayers;
 
             string[] roomProperties = { GAME_MODE };
 
             Hashtable customRoomProperties = new Hashtable
-            {
-                {GAME_MODE, _selectedGameMode.Name}
-            };
+            { {GAME_MODE, _selectedGameMode.Name} };
 
             ro.CustomRoomPropertiesForLobby = roomProperties;
             ro.CustomRoomProperties = customRoomProperties;
 
             return ro;
         }
-
-        private void DebugPlayerList()
-        {
-            string players = "";
-            foreach (KeyValuePair<int, Player> player in PhotonNetwork.CurrentRoom.Players)
-            {
-                players += $"{player.Value.NickName}, ";
-            }
-            Debug.Log($"Current Room Players: {players}");
-        }
-
+        
         private GameMode GetRoomGameMode()
         {
             string gameModeName = (string)PhotonNetwork.CurrentRoom.CustomProperties[GAME_MODE];
@@ -286,102 +335,58 @@ namespace KnoxGameStudios
             }
             return gameMode;
         }
+        
 
-        private void AutoStartGame()
+        private void DebugPlayerList()
         {
-            if (PhotonNetwork.CurrentRoom.PlayerCount >= _selectedGameMode.MaxPlayers)
-                HandleStartGame();
+            string players = "";
+            foreach (KeyValuePair<int, Player> player in PhotonNetwork.CurrentRoom.Players)
+            {
+                players += $"{player.Value.NickName}, ";
+            }
+            Debug.Log($"Current Room Players: {players}");
         }
 
-        private Transform GetPlayersContainer()
+
+//_____________________________________________________________________________________________________________________
+// SUPPORT FUNCTIONS
+//---------------------------------------------------------------------------------------------------------------------
+        private void SpawnPhotonManager()
         {
-            // Navigate through the known hierarchy to find 'UI Team_ArenaLegends(Clone)' objects
-            Transform teamsContainer = GameObject.Find("All In One Canvas/Main Layout/Middle/Main Content/Room Content/Teams")?.transform;
-
-            if (teamsContainer == null)
-            {
-                Debug.LogError("'Teams' object not found in the hierarchy.");
-                return null;
-            }
-
-            // Find all 'UI Team_ArenaLegends(Clone)' children under 'Teams'
-            List<Transform> teamObjects = new List<Transform>();
-            foreach (Transform child in teamsContainer)
-            {
-                if (child.name.Contains("UI Team_ArenaLegends(Clone)"))
-                {
-                    teamObjects.Add(child);
-                }
-            }
-
-            if (teamObjects.Count == 0)
-            {
-                Debug.LogError("No 'UI Team_ArenaLegends(Clone)' objects found under 'Teams'.");
-                return null;
-            }
-
-            // Sort teamObjects by sibling index (higher in the hierarchy comes first)
-            teamObjects.Sort((a, b) => a.GetSiblingIndex().CompareTo(b.GetSiblingIndex()));
-
-            // Iterate through team objects to find the first available 'Players_Container' with less than 3 children
-            foreach (Transform teamObject in teamObjects)
-            {
-                Transform playersContainer = teamObject.Find("Players_Container");
-                if (playersContainer != null && playersContainer.childCount < 3)
-                {
-                    return playersContainer;
-                }
-            }
-
-            // If all are full, return the 'Players_Container' from the second 'UI Team_ArenaLegends(Clone)'
-            if (teamObjects.Count > 1)
-            {
-                Transform fallbackContainer = teamObjects[1].Find("Players_Container");
-                if (fallbackContainer != null)
-                {
-                    return fallbackContainer;
-                }
-            }
-
-            Debug.LogError("No valid 'Players_Container' found.");
-            return null;
+            // Instantiate the Photon_Manager_Spawn object for the local player
+            GameObject playerSpawn = PhotonNetwork.Instantiate(_Photon_Manager_Spawn.name, Vector3.zero, Quaternion.identity);
+            Debug.Log("Local player object spawned");
         }
 
-        private void SpawnImageForPlayer(Player player)
+
+//_____________________________________________________________________________________________________________________
+// OVERRIDE FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
+        public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
         {
-            if (playerProfilePrefab == null)
+            object startGameObject;
+            if (propertiesThatChanged.TryGetValue(START_GAME, out startGameObject))
             {
-                Debug.LogError("Player Profile prefab is not assigned in the inspector.");
-                return;
-            }
-
-            // Get the correct Players_Container to attach the image
-            Transform playersContainer = GetPlayersContainer();
-            if (playersContainer == null)
-            {
-                Debug.LogError("Players_Container not found.");
-                return;
-            }
-
-            // Instantiate the player profile using PhotonNetwork.Instantiate
-            GameObject spawnedProfile = PhotonNetwork.Instantiate(playerProfilePrefab.name, Vector3.zero, Quaternion.identity);
-
-            // Set the profile as a child of the Players_Container object
-            spawnedProfile.transform.SetParent(playersContainer, false);
-
-            // Optionally, you can assign the profile a name or label it with the player's nickname
-            spawnedProfile.name = $"Player_Profile_{player.NickName}";
-
-            Debug.Log($"Spawned Player Profile for player: {player.NickName} as child of {playersContainer.name}");
+                _startGame = (bool)startGameObject;
+                if (_startGame)
+                {
+                    _currentCountDown = GAME_COUNT_DOWN;
+                }
+                if (_startGame && PhotonNetwork.IsMasterClient)
+                {
+                    PhotonNetwork.CurrentRoom.IsVisible = true;
+                    PhotonNetwork.CurrentRoom.IsOpen = true;
+                }
+            }   
         }
-        #endregion
 
-        #region Photon Callbacks
+        
         public override void OnCreatedRoom()
         {
             Debug.Log($"You have created a Photon Room named {PhotonNetwork.CurrentRoom.Name}");
             OnMasterOfRoom?.Invoke(PhotonNetwork.LocalPlayer);
         }
+
 
         public override void OnJoinedRoom()
         {
@@ -392,70 +397,31 @@ namespace KnoxGameStudios
             _selectedGameMode = GetRoomGameMode();
             OnJoinRoom?.Invoke(_selectedGameMode);
             OnRoomStatusChange?.Invoke(PhotonNetwork.InRoom);
-
-            // Ensure the local player is initialized properly before doing anything else
-            InitializeLocalPlayer();
-
-            // Handle room synchronization if other players are already in the room
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                // Synchronize room data or request room properties from the master client if needed
-                Debug.Log("You are not the Master Client. Syncing data with the Master Client.");
-                SyncWithMasterClient();
-            }
-
-            // Spawn the image for the local player
-            SpawnImageForPlayer(PhotonNetwork.LocalPlayer);
         }
 
-        private void InitializeLocalPlayer()
+        public override void OnJoinRoomFailed(short returnCode, string message)
         {
-            // Assuming UIPlayerSelection is the script handling the player's selection UI
-            UIPlayerSelection playerSelection = FindObjectOfType<UIPlayerSelection>();
-
-            if (playerSelection != null)
-            {
-                // Initialize the player selection for the local player
-                playerSelection.Initialize(PhotonNetwork.LocalPlayer);
-            }
-            else
-            {
-                Debug.LogError("UIPlayerSelection not found for the local player.");
-            }
-
-            // You can also initialize other Photon properties here if necessary
+            Debug.Log($"You failed to join a Photon room: {message}");
         }
 
-        private void SyncWithMasterClient()
+
+        public override void OnJoinRandomFailed(short returnCode, string message)
         {
-            // Placeholder method: Here you might send an RPC to the master client requesting current game state or room properties.
-            // Example:
-            // photonView.RPC("RequestRoomState", PhotonNetwork.MasterClient);
-
-            // Or you could use `PhotonNetwork.CurrentRoom.CustomProperties` to retrieve any room properties or state information.
-            Debug.Log("Synchronizing data with Master Client.");
+            Debug.Log($"OnJoinRandomFailed {message}");
+            CreatePhotonRoom();
         }
+
 
         public override void OnPlayerEnteredRoom(Player newPlayer)
         {
-            base.OnPlayerEnteredRoom(newPlayer);
-            Debug.Log($"Player joined: {newPlayer.NickName}");
-
-            // Spawn an image object for the new player
-            SpawnImageForPlayer(newPlayer);
-
-            // Ensure all existing players update their UI to reflect the new player joining
-            foreach (Player player in PhotonNetwork.PlayerList)
-            {
-                if (player != newPlayer)  // Ensure we don't update the UI for the new player itself
-                {
-                    photonView.RPC("UpdatePlayerUIForOthers", RpcTarget.All, player.ActorNumber);
-                }
-            }
+            Debug.Log($"Another player has joined the room {newPlayer.NickName}");
+            DebugPlayerList();
+            AutoStartGame();
 
             // Initialize the new player's UI
             UIDisplayRoom.Instance.ShowReadyButton();
         }
+
 
         public override void OnLeftRoom()
         {
@@ -465,53 +431,14 @@ namespace KnoxGameStudios
             OnRoomStatusChange?.Invoke(PhotonNetwork.InRoom);
         }
 
-        public override void OnJoinRandomFailed(short returnCode, string message)
-        {
-            Debug.Log($"OnJoinRandomFailed {message}");
-            CreatePhotonRoom();
-        }
 
-        public override void OnJoinRoomFailed(short returnCode, string message)
-        {
-            Debug.Log($"You failed to join a Photon room: {message}");
-        }
-
-        [PunRPC]
-        private void UpdatePlayerUIForOthers(int playerActorNumber)
-        {
-            Player player = PhotonNetwork.CurrentRoom.GetPlayer(playerActorNumber);
-            if (player != null)
-            {
-                Debug.Log($"Updating UI for player {player.NickName}");
-
-                UIPlayerSelection playerSelection = FindPlayerSelectionUI(player);
-                if (playerSelection != null)
-                {
-                    playerSelection.Initialize(player);  // Initialize UI elements for the player
-                }
-            }
-        }
-
-        private UIPlayerSelection FindPlayerSelectionUI(Player player)
-        {
-            UIPlayerSelection[] playerSelectionUIs = FindObjectsOfType<UIPlayerSelection>();
-
-            foreach (var playerSelection in playerSelectionUIs)
-            {
-                if (playerSelection.Owner == player)
-                {
-                    return playerSelection;
-                }
-            }
-            return null;
-        }
-
-        public override void OnPlayerLeftRoom(Player otherPlayer)
+         public override void OnPlayerLeftRoom(Player otherPlayer)
         {
             Debug.Log($"Player has left the room {otherPlayer.NickName}");
             OnOtherPlayerLeftRoom?.Invoke(otherPlayer);
             DebugPlayerList();
         }
+
 
         public override void OnMasterClientSwitched(Player newMasterClient)
         {
@@ -519,41 +446,6 @@ namespace KnoxGameStudios
             OnMasterOfRoom?.Invoke(newMasterClient);
         }
 
-        public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
-        {
-            if (propertiesThatChanged.ContainsKey(START_GAME))
-            {
-                if (propertiesThatChanged[START_GAME] is bool startGame)
-                {
-                    _startGame = startGame;
 
-                    if (_startGame)
-                    {
-                        _currentCountDown = GAME_COUNT_DOWN;
-                        Debug.Log("Game is starting. Countdown initiated.");
-
-                        if (PhotonNetwork.IsMasterClient)
-                        {
-                            PhotonNetwork.CurrentRoom.IsVisible = false;
-                            PhotonNetwork.CurrentRoom.IsOpen = false;
-                            Debug.Log("Room is now closed and hidden as the game is starting.");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("START_GAME flag is set to false.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("START_GAME property exists but is not a boolean. Value: " + propertiesThatChanged[START_GAME]);
-                }
-            }
-            else
-            {
-                Debug.LogError("START_GAME property was updated but is missing from the properties.");
-            }
-        }
-        #endregion
     }
 }

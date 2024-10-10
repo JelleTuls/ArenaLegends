@@ -6,23 +6,24 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-//_____________________________________________________________________________________________________________________
-//NOTES
-//---------------------------------------------------------------------------------------------------------------------
-//NOTE: 
-
 namespace KnoxGameStudios
 {
     public class PhotonTeamController : MonoBehaviourPunCallbacks
     {
 
 //_____________________________________________________________________________________________________________________
-//GENERAL VARIABLES:
+//VARIABLES:
 //---------------------------------------------------------------------------------------------------------------------
+        // LISTS
         [SerializeField] private List<PhotonTeam> _roomTeams; // List to store teams in the room
+
+        // INT
         [SerializeField] private int _teamSize; // Variable to set max size of each team
+
+        // REFERENCES
         [SerializeField] private PhotonTeam _priorTeam; // Variable to store the previous team when swapping teams
 
+        // PUBLIC STATIC ACTIONS
         public static Action<List<PhotonTeam>, GameMode> OnCreateTeams = delegate { }; // Action <-- when creating a team
         public static Action<Player, PhotonTeam> OnSwitchTeam = delegate { }; // Action <-- When switching team
         public static Action<Player> OnRemovePlayer = delegate { }; // Action <-- When player got removed from lobby
@@ -30,7 +31,7 @@ namespace KnoxGameStudios
 
 
 //_____________________________________________________________________________________________________________________
-//GENERAL VOIDS:
+//START VOIDS:
 //---------------------------------------------------------------------------------------------------------------------
         private void Awake() // WHEN TEAM MANAGER OBJECT GOT INSTANTIATED
         {
@@ -43,6 +44,10 @@ namespace KnoxGameStudios
             _roomTeams = new List<PhotonTeam>(); // Initialize the list of room teams
         }
 
+
+//_____________________________________________________________________________________________________________________
+//ON DESTROY:
+//---------------------------------------------------------------------------------------------------------------------
         private void OnDestroy() // WHEN TEAM MANAGER OBJECT (LOBBY/ROOM) GOT DESTROYED
         {
             // Unsubscribe from the UITeam event for team switching
@@ -54,13 +59,8 @@ namespace KnoxGameStudios
 
 
 //_____________________________________________________________________________________________________________________
-//PUBLIC & PRIVATE VOIDS/FUNCTIONS
+//VOIDS
 //---------------------------------------------------------------------------------------------------------------------   
-        
-
-        //_____________________________________________________________________________________________________________________
-        //TEAM MANAGEMENT
-        //--------------------------------------------------------------------------------------------------------------------- 
         private void CreateTeams(GameMode gameMode) // Create Teams (used in HandleCreateTeams)
         {
             _teamSize = gameMode.TeamSize; // Set team size based on gameMode object settings
@@ -83,42 +83,6 @@ namespace KnoxGameStudios
             }
         }
 
-        private void HandleCreateTeams(GameMode gameMode) // Handles the creations of teams when joining a room
-        {
-            CreateTeams(gameMode); // Play function CreateTeams()
-
-            OnCreateTeams?.Invoke(_roomTeams, gameMode); // Invoke the event to notify about team creation
-
-            AutoAssignPlayerToTeam(PhotonNetwork.LocalPlayer, gameMode); // Auto-assign the local player to a team
-        }
-        
-        private void HandleSwitchTeam(PhotonTeam newTeam)
-        {
-            if (PhotonNetwork.LocalPlayer.GetPhotonTeam() == null)
-            {
-                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
-                PhotonNetwork.LocalPlayer.JoinTeam(newTeam);
-                
-                // Store the team code in custom properties
-                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
-                {
-                    { "TeamCode", newTeam.Code }
-                };
-                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
-            }
-            else if (CanSwitchToTeam(newTeam))
-            {
-                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
-                PhotonNetwork.LocalPlayer.SwitchTeam(newTeam);
-                
-                // Update custom properties with the new team code
-                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
-                {
-                    { "TeamCode", newTeam.Code }
-                };
-                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
-            }
-        }
 
         private void AutoAssignPlayerToTeam(Player player, GameMode gameMode)
         {
@@ -129,7 +93,6 @@ namespace KnoxGameStudios
                 if (teamPlayerCount < gameMode.TeamSize)
                 {
                     Debug.Log($"Auto assigned {player.NickName} to {team.Name}");
-
                     if (player.GetPhotonTeam() == null)
                     {
                         player.JoinTeam(team.Code);
@@ -139,21 +102,85 @@ namespace KnoxGameStudios
                         player.SwitchTeam(team.Code);
                     }
                     
+                    // REMOVED TO SET SCRIPT EQUAL TO KNOX
+                    /*
                     // Store the team code in custom properties
                     ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
                     {
                         { "TeamCode", team.Code }
                     };
                     player.SetCustomProperties(customProperties);
+                    */
                     break;
                 }
             }
         }
 
 
-        //_____________________________________________________________________________________________________________________
-        //(BOOLEAN)
-        //--------------------------------------------------------------------------------------------------------------------- 
+//_____________________________________________________________________________________________________________________
+//HANDLE METHODS
+//---------------------------------------------------------------------------------------------------------------------   
+        private void HandleCreateTeams(GameMode gameMode) // Handles the creations of teams when joining a room
+        {
+            CreateTeams(gameMode); // Play function CreateTeams()
+
+            OnCreateTeams?.Invoke(_roomTeams, gameMode); // Invoke the event to notify about team creation
+
+            AutoAssignPlayerToTeam(PhotonNetwork.LocalPlayer, gameMode); // Auto-assign the local player to a team
+        }
+        
+        
+        private void HandleSwitchTeam(PhotonTeam newTeam)
+        {
+            if (PhotonNetwork.LocalPlayer.GetPhotonTeam() == null)
+            {
+                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
+                PhotonNetwork.LocalPlayer.JoinTeam(newTeam);
+                
+                // REMOVED TO SET SCRIPT EQUAL TO KNOX
+                /*
+                // Store the team code in custom properties
+                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
+                {
+                    { "TeamCode", newTeam.Code }
+                };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
+                */
+            }
+            else if (CanSwitchToTeam(newTeam))
+            {
+                _priorTeam = PhotonNetwork.LocalPlayer.GetPhotonTeam();
+                PhotonNetwork.LocalPlayer.SwitchTeam(newTeam);
+                
+                // REMOVED TO SET SCRIPT EQUAL TO KNOX
+                /*
+                // Update custom properties with the new team code
+                ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable
+                {
+                    { "TeamCode", newTeam.Code }
+                };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
+                */
+            }
+        }
+
+        
+        private void HandleLeaveRoom() // Handling what happens when the player itself leaves the room
+        {
+            PhotonNetwork.LocalPlayer.LeaveCurrentTeam(); // Register the leave in Photon
+            _roomTeams.Clear(); // Clear team related data
+            _teamSize = 0; // Set team size to 0 (Local of player)
+            OnClearTeams?.Invoke(); // Invoke the event/action to notify about cleaning teams
+        }
+
+
+        private void HandleOtherPlayerLeftRoom(Player otherPlayer) // Handling what happens when another player leaves ther oom
+        {
+            OnRemovePlayer?.Invoke(otherPlayer); // Invoke the event/action which notifies the room a player has left
+        }
+//_____________________________________________________________________________________________________________________
+//BOOLEAN METHODS
+//--------------------------------------------------------------------------------------------------------------------- 
         private bool CanSwitchToTeam(PhotonTeam newTeam) // Boolean variable function CanSwitchToTeam
         {
             bool canSwitch = false; // Start bool at FALSE
@@ -182,27 +209,9 @@ namespace KnoxGameStudios
         }
         
 
-        //_____________________________________________________________________________________________________________________
-        //LEAVE & JOIN ROOM
-        //--------------------------------------------------------------------------------------------------------------------- 
-        private void HandleLeaveRoom() // Handling what happens when the player itself leaves the room
-        {
-            PhotonNetwork.LocalPlayer.LeaveCurrentTeam(); // Register the leave in Photon
-            _roomTeams.Clear(); // Clear team related data
-            _teamSize = 0; // Set team size to 0 (Local of player)
-            OnClearTeams?.Invoke(); // Invoke the event/action to notify about cleaning teams
-        }
-
-        private void HandleOtherPlayerLeftRoom(Player otherPlayer) // Handling what happens when another player leaves ther oom
-        {
-            OnRemovePlayer?.Invoke(otherPlayer); // Invoke the event/action which notifies the room a player has left
-        }
-        
-
 //_____________________________________________________________________________________________________________________
 //OVERRIDE VOIDS/FUNCTIONS
 //---------------------------------------------------------------------------------------------------------------------  
-
         public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps) // 
         {
             object teamCodeObject;

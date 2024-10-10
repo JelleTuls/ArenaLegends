@@ -51,12 +51,35 @@ public class Player_Handle_Target : MonoBehaviour
 
     private void LateUpdate()
     {
-        if(view.IsMine){
-            targetSelection.transform.position = new Vector3(isTarget.transform.position.x, 
-            isTarget.transform.position.y + 0.1f, isTarget.transform.position.z); // targetSlectionCircle ==> Follows Target
+        if (view.IsMine)
+        {
+            // Check if isTarget is not null before accessing its properties
+            if (isTarget != null)
+            {
+                // Move the target selection UI to follow the current target
+                targetSelection.transform.position = new Vector3(
+                    isTarget.transform.position.x, 
+                    isTarget.transform.position.y + 0.1f, 
+                    isTarget.transform.position.z
+                );
 
-            targetHealth = isTarget.GetComponent<Player_Handle_Stats>().myHealth; // Get Target's Current Health
-            UpdateHealthUI(); // Play function UpdateHealthUI()
+                // Check if the Player_Handle_Stats component is available
+                Player_Handle_Stats targetStats = isTarget.GetComponent<Player_Handle_Stats>();
+                if (targetStats != null)
+                {
+                    // Update target health if the component is found
+                    targetHealth = targetStats.myHealth;
+                    UpdateHealthUI();
+                }
+                else
+                {
+                    Debug.LogWarning("Player_Handle_Stats component not found on target.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No target assigned in isTarget.");
+            }
         }
     }
 
@@ -78,27 +101,47 @@ public class Player_Handle_Target : MonoBehaviour
     public Sprite targetPortraitNoSelection; // Sprite .png object of No Selection portait
     public Sprite targetPortraitClassNoSelection; // Sprite .png object of No Selecction class
 
+
     public void FTarget() // Scan for enemies within range (Select most nearby):
     {
         // First, try to find players from a different team
         bool foundOpponent = TryFindOpponentByTeam();
-        
+
         if (!foundOpponent)
         {
             // No opponent found from the other team, proceed with original logic
             Debug.Log("No players found in the opposing team. Searching for targets based on layers.");
             Collider[] colliders = Physics.OverlapSphere(transform.position, checkRadius, checkLayers); // Create list of objects within range
-            
+
             if (colliders.Length > 0)
             {
-                Array.Sort(colliders, new TargetComparer(transform)); // Order based on distance:
-                isTarget = GameObject.Find(colliders[0].name); // Set Active Target ==> isTarget (Most nearby target/1st from list)
+                Array.Sort(colliders, new TargetComparer(transform)); // Order based on distance
 
-                targetPortraitImage.sprite = isTarget.GetComponent<Player_Handle_Stats>().myPortrait; // Set target visual sprite == Portrait sprite from target's Handler_Stats
-                targetPortraitClass.sprite = isTarget.GetComponent<Player_Handle_Stats>().myClass; // Set target visual sprite == Class sprite from target's Handler_Stats
-                targetSelection.SetActive(true); // Activate taret visual object
+                // Check if the first collider has a valid GameObject
+                GameObject targetObject = colliders[0].gameObject;
+                if (targetObject != null)
+                {
+                    isTarget = targetObject;
 
-                targetMaxHealth = isTarget.GetComponent<Player_Handle_Stats>().myMaxHealth; // Get target's MaxHealth
+                    // Ensure the target has the expected Player_Handle_Stats component before accessing it
+                    Player_Handle_Stats targetStats = isTarget.GetComponent<Player_Handle_Stats>();
+                    if (targetStats != null)
+                    {
+                        targetPortraitImage.sprite = targetStats.myPortrait; // Set target visual sprite
+                        targetPortraitClass.sprite = targetStats.myClass;    // Set target class sprite
+                        targetSelection.SetActive(true); // Activate target visual object
+
+                        targetMaxHealth = targetStats.myMaxHealth; // Get target's MaxHealth
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Target {isTarget.name} does not have a Player_Handle_Stats component.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Target GameObject is null.");
+                }
             }
             else
             {
@@ -106,6 +149,7 @@ public class Player_Handle_Target : MonoBehaviour
             }
         }
     }
+
 
     private bool TryFindOpponentByTeam()
     {

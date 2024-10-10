@@ -29,42 +29,58 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using System;
 using TMPro;
+using KnoxGameStudios;
 
 namespace KnoxGameStudios
 {
     public class UIDisplayRoom : MonoBehaviourPunCallbacks
     {
-         public static UIDisplayRoom Instance { get; private set; }
-        
+//_____________________________________________________________________________________________________________________
+// VARIABLES:
+//---------------------------------------------------------------------------------------------------------------------
+        //TEXT OBJECTS
         [SerializeField] private TMP_Text _roomTitleText;
+
+        //GAME OBJECTS
         [SerializeField] private GameObject _startButton;
         [SerializeField] private GameObject _readyButton;
         [SerializeField] private GameObject _exitButton;
         [SerializeField] private GameObject _roomContainer;
 
+        [SerializeField] private GameObject roomControllerObject;
+
+        //LISTS
+        [SerializeField] private GameObject[] _hideObjects; // List of objects to hide when joining or leaving a room
+        [SerializeField] private GameObject[] _showObjects; // List of objects to show when joining or leaving a room
+
+        //PUBLIC STATIC (ACTIONS)
+        public static UIDisplayRoom Instance { get; private set; }
         public static Action OnStartGame = delegate { };
         public static Action OnLeaveRoom = delegate { };
 
+        //STRINGS
         private const string PLAYER_READY = "PlayerReady"; // Key for CustomProperties to store ready status
 
-        private PhotonView photonView;
+        //PHOTON
+        //private PhotonView photonView;
 
+        //REFERENCES
+        private PhotonRoomController roomController;
+
+
+//_____________________________________________________________________________________________________________________
+// START FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         private void Awake()
         {
-            if (Instance != null && Instance != this)
-        {
-            Destroy(this.gameObject); // Prevents multiple instances
-        }
-        else
-        {
-            Instance = this;
-        }
-        
-            // Ensure that the PhotonView is attached and accessible
-            photonView = GetComponent<PhotonView>();
-            if (photonView == null)
+            if (Instance == null)
             {
-                Debug.LogError("PhotonView component is missing from UIDisplayRoom.");
+                Instance = this;
+                DontDestroyOnLoad(gameObject); // Optional: if you want the instance to persist between scenes
+            }
+            else
+            {
+                Destroy(gameObject); // Ensure that there's only one instance
             }
 
             PhotonRoomController.OnJoinRoom += HandleJoinRoom;
@@ -73,6 +89,10 @@ namespace KnoxGameStudios
             PhotonRoomController.OnCountingDown += HandleCountingDown;
         }
 
+
+//_____________________________________________________________________________________________________________________
+// ON DESTROY:
+//---------------------------------------------------------------------------------------------------------------------
         private void OnDestroy()
         {
             PhotonRoomController.OnJoinRoom -= HandleJoinRoom;
@@ -81,26 +101,47 @@ namespace KnoxGameStudios
             PhotonRoomController.OnCountingDown -= HandleCountingDown;
         }
 
+
+//_____________________________________________________________________________________________________________________
+// HANDLE METHODS:
+//---------------------------------------------------------------------------------------------------------------------
         private void HandleJoinRoom(GameMode gameMode)
         {
             _roomTitleText.SetText(PhotonNetwork.CurrentRoom.CustomProperties["GAMEMODE"].ToString());
             _exitButton.SetActive(true);
             _roomContainer.SetActive(true);
+
+            // EXTRA CALL COMPARED TO THE ORIGINAL KNOX
             ShowReadyButton();
+            
+            foreach (GameObject obj in _hideObjects)
+            {
+                obj.SetActive(false);
+            }
         }
+
 
         private void HandleRoomLeft()
         {
+            _roomTitleText.SetText("JOINING ROOM");
             _startButton.SetActive(false);
             _readyButton.SetActive(false);
             _exitButton.SetActive(false);
-            _roomTitleText.SetText("JOINING ROOM");
+
+            foreach (GameObject obj in _showObjects)
+            {
+                obj.SetActive(true);
+            }
         }
+
 
         private void HandleMasterOfRoom(Player masterPlayer)
         {
+            _roomTitleText.SetText(PhotonNetwork.CurrentRoom.CustomProperties["GAMEMODE"].ToString());
+
             ShowReadyButton();
         }
+
 
         private void HandleCountingDown(float count)
         {
@@ -110,11 +151,16 @@ namespace KnoxGameStudios
             _roomTitleText.SetText(count.ToString("F0"));
         }
 
+
+//_____________________________________________________________________________________________________________________
+// START AND READY FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         public void ShowReadyButton()
         {
             _startButton.SetActive(false);
             _readyButton.SetActive(true);
         }
+
 
         private void ShowPlayButton()
         {
@@ -122,55 +168,46 @@ namespace KnoxGameStudios
             _readyButton.SetActive(false);
         }
 
+
         public void ReadyUp()
         {
-            if (photonView == null)
+            if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("CSN", out object selectedIndexObject) && selectedIndexObject != null)
             {
-                Debug.LogError("PhotonView is null in ReadyUp function.");
-                return;
-            }
+                // Set the player's "ready" status in their CustomProperties
+                Hashtable readyProperty = new Hashtable { { PLAYER_READY, true } };
+                PhotonNetwork.LocalPlayer.SetCustomProperties(readyProperty);
 
-            // Set the player's "ready" status in their CustomProperties
-            Hashtable readyProperty = new Hashtable { { PLAYER_READY, true } };
-            PhotonNetwork.LocalPlayer.SetCustomProperties(readyProperty);
+                // Hide the ready button
+                _readyButton.SetActive(false);
 
-            // Hide the ready button
-            _readyButton.SetActive(false);
-
-            // If the local player is the master client, show the Play button
-            if (PhotonNetwork.IsMasterClient)
-            {
-                ShowPlayButton();
-            }
-
-            // Notify the master client that this player is ready
-            photonView.RPC("NotifyMasterClientReady", RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.NickName);
-        }
-
-        [PunRPC]
-        private void NotifyMasterClientReady(string playerName)
-        {
-            // Log the player that clicked ready on the master client
-            Debug.Log($"{playerName} is ready.");
-        }
-
-        public void StartGame()
-        {
-            if (PhotonNetwork.IsMasterClient)
-            {
-                bool allPlayersReady = CheckAllPlayersReady();
-
-                if (allPlayersReady)
+                // If the local player is the master client, show the Play button
+                if (PhotonNetwork.IsMasterClient)
                 {
-                    Debug.Log("All players are ready. Starting the game...");
-                    OnStartGame?.Invoke();
+                    ShowPlayButton();
+                }
+
+                // Find the GameObject by the full path in the hierarchy
+                if (roomControllerObject != null)
+                {
+                    // Get the PhotonRoomController component from that GameObject
+                    roomController = roomControllerObject.GetComponent<PhotonRoomController>();
+
+                    if (roomController != null)
+                    {
+                        roomController.SendReadyStatusToMaster(); // Call the method
+                    }
+                    else
+                    {
+                        Debug.LogError("PhotonRoomController component not found on the GameObject.");
+                    }
                 }
                 else
                 {
-                    Debug.Log("Not all players are ready. Waiting...");
+                    Debug.LogError("GameObject 'Network Controllers/Photon/Room' not found in the scene.");
                 }
             }
         }
+
 
         private bool CheckAllPlayersReady()
         {
@@ -195,17 +232,31 @@ namespace KnoxGameStudios
             return true;
         }
 
-        // public override void OnPlayerEnteredRoom(Player newPlayer)
-        // {
-        //     base.OnPlayerEnteredRoom(newPlayer);
-        //     Debug.Log($"Player joined: {newPlayer.NickName}");
-        //     ShowReadyButton();
-        // }
 
-        // public override void OnPlayerLeftRoom(Player otherPlayer)
-        // {
-        //     base.OnPlayerLeftRoom(otherPlayer);
-        //     Debug.Log($"Player left: {otherPlayer.NickName}");
-        // }
+        public void LeaveRoom()
+        {
+            OnLeaveRoom?.Invoke();
+        }
+
+
+        public void StartGame()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                bool allPlayersReady = CheckAllPlayersReady();
+
+                if (allPlayersReady)
+                {
+                    Debug.Log("All players are ready. Starting the game...");
+                    OnStartGame?.Invoke();
+                }
+                else
+                {
+                    Debug.Log("Not all players are ready. Waiting...");
+                }
+            }
+        }
+
+
     }
 }

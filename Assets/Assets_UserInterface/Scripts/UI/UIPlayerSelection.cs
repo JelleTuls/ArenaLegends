@@ -34,52 +34,39 @@ namespace KnoxGameStudios
 {
     public class UIPlayerSelection : MonoBehaviourPunCallbacks
     {
-        //_____________________________________________________________________________________________________________________
-        // VARIABLES:
-        //---------------------------------------------------------------------------------------------------------------------
-        #region VARIABLES
-        #region PROFILE VARIABLES
-            [SerializeField] private TMP_Text _usernameText; // PHOTON Variable to hold player's username
-            [SerializeField] private Player _owner; // PHOTON Variable to store the reference to a player
-        #endregion PROFILE VARIABLES
+//_____________________________________________________________________________________________________________________
+// VARIABLES:
+//---------------------------------------------------------------------------------------------------------------------
+        [SerializeField] private TMP_Text _usernameText; // PHOTON Variable to hold player's username
+        [SerializeField] private Player _owner; // PHOTON Variable to store the reference to a player
 
-        #region CHARACTER SELECTION VARIABLES
-            [SerializeField] private Image _portraitImage; // Image file used for selection portraits
-            [SerializeField] private GameObject _previousButton; // Previous character selection button
-            [SerializeField] private GameObject _nextButton; // Next character selection button
-            [SerializeField] private GameObject _kickButton; // Remove player from lobby button
+        [SerializeField] private Image _portraitImage; // Image file used for selection portraits
+        [SerializeField] private GameObject _kickButton; // Remove player from lobby button
 
-            // Add this array of sprites for character selections
-            [SerializeField] private Sprite[] profileSprites; // List of sprite images to select from
+        // Add this array of sprites for character selections
+        [SerializeField] private Sprite[] profileSprites; // List of sprite images to select from
 
-            [SerializeField] private int _currentSelection; // Currently selected character
-        #endregion CHARACTER SELECTION VARIABLES
+        [SerializeField] private int _currentSelection; // Currently selected character
 
-        #region CONSTANTS
-            private const string CHARACTER_SELECTION_NUMBER = "CSN"; // Personal identification number of player (Constant --> doesn't change)
-            private const string KICKED_PLAYER = "KICKED"; // Status value for kicked players
-        #endregion CONSTANTS
+        private const string CHARACTER_SELECTION_NUMBER = "CSN"; // Personal identification number of player (Constant --> doesn't change)
+        private const string KICKED_PLAYER = "KICKED"; // Status value for kicked players
 
-        #region ACTIONS
-            public static Action<Player> OnKickPlayer = delegate { }; // Action to play when player gets kicked
-        #endregion ACTIONS
-        #endregion VARIABLES
+        public static Action<Player> OnKickPlayer = delegate { }; // Action to play when player gets kicked
 
-        //_____________________________________________________________________________________________________________________
-        // RETURN FUNCTIONS:
-        //---------------------------------------------------------------------------------------------------------------------
-        #region PLAYER/OWNER OBJECT
+
+//_____________________________________________________________________________________________________________________
+// RETURN FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         public Player Owner // Refers to the player/the owner of a selection
         {
             get { return _owner; } // Gets the Photon player reference
             private set { _owner = value; } // Register the player
         }
-        #endregion PLAYER/OWNER OBJECT
 
-        //_____________________________________________________________________________________________________________________
-        // GENERAL VOIDS: (CALL FUNCTIONS)
-        //---------------------------------------------------------------------------------------------------------------------
-        #region PUBLIC VOIDS
+
+//_____________________________________________________________________________________________________________________
+// START FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         public void Initialize(Player player)
         {
             Debug.Log($"Initializing player selection for {player.NickName}");
@@ -92,23 +79,15 @@ namespace KnoxGameStudios
             SetupPlayerSelection();
             UpdateCharacterModel(_currentSelection);  // Update model on initialization
         }
-        #endregion PUBLIC VOIDS
 
-        #region PRIVATE VOIDS
+
+//_____________________________________________________________________________________________________________________
+// SELECTION FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         public void SetupPlayerSelection() // Prepare/activate character selection visuals
         {
             _usernameText.SetText(_owner.NickName); // Set the value of: _usernameText equal to the _owner Photon nickname
             _kickButton.SetActive(false); // Deactivate the kick button
-            if (PhotonNetwork.LocalPlayer.Equals(Owner)) // Only for the local player!
-            {
-                _previousButton.SetActive(true); // Activate your selection previous button
-                _nextButton.SetActive(true); // Activate your selection next button
-            }
-            else
-            {
-                _previousButton.SetActive(false); // If not owner of the selection, deactivate previous button
-                _nextButton.SetActive(false); // If not owner of the selection, deactivate next button
-            }
 
             if (PhotonNetwork.IsMasterClient) // If you are the host
             {
@@ -116,6 +95,50 @@ namespace KnoxGameStudios
             }                
         }
 
+
+        private int GetCharacterSelection()
+        {
+            int selection = 0;  // Default selection value
+            object playerSelectionObj;
+            if (Owner.CustomProperties.TryGetValue(CHARACTER_SELECTION_NUMBER, out playerSelectionObj))
+            {
+                selection = (int)playerSelectionObj;
+            }
+            return selection;
+        }
+
+
+        // Set the CHARACTER_SELECTION_NUMBER equal the the incoming int selection, then UpdateCharacterModel
+        public void UpdateCharacterSelection(int selection)
+        {
+            // This log message is showing!
+            Debug.Log($"Updating Photon Custom Property {CHARACTER_SELECTION_NUMBER} for {PhotonNetwork.LocalPlayer.NickName} to {selection}");
+            
+            // Update Photon player properties with the new selection. This can then be collected from the next scene.
+            Hashtable playerSelectionProperty = new Hashtable()
+            {
+                {CHARACTER_SELECTION_NUMBER, selection}
+            };
+            // Set property of local player: playerSelectionProperty
+            PhotonNetwork.LocalPlayer.SetCustomProperties(playerSelectionProperty);
+            
+            // Removed because not in the original script!
+            // // Update the UI elements (profile image and character model)
+            // UpdateCharacterModel(selection);  // Updates character image in the player selection
+        }
+
+
+        private void UpdateCharacterModel(int selection) // Update visuals based on selection.
+        {
+            // Set the Image.sprite object/component equal to the sprite in the profileSpites list based on the int selection
+            _portraitImage.sprite = profileSprites[selection];
+            Debug.Log($"Character model updated to selection index: {selection}");
+        }
+
+
+//_____________________________________________________________________________________________________________________
+// MASTER CLIENT FUNCTIONS:
+//---------------------------------------------------------------------------------------------------------------------
         private void ShowMasterClientUI() // Host can see and use the kick button
         {
             if (!PhotonNetwork.IsMasterClient) return; // Not the host --> Ignore this function!
@@ -130,48 +153,6 @@ namespace KnoxGameStudios
             }                
         }
 
-        private int GetCharacterSelection()
-        {
-            int selection = 0;  // Default selection value
-            object playerSelection;
-            if (Owner.CustomProperties.TryGetValue(CHARACTER_SELECTION_NUMBER, out playerSelection))
-            {
-                selection = (int)playerSelection;
-            }
-            return selection;
-        }
-
-        // Set the CHARACTER_SELECTION_NUMBER equal the the incoming int selection, then UpdateCharacterModel
-        public void UpdateCharacterSelection(int selection)
-        {
-            // Update Photon player properties with the new selection. This can then be collected from the next scene.
-            Hashtable playerSelectionProperty = new Hashtable()
-            {
-                {CHARACTER_SELECTION_NUMBER, selection}
-            };
-
-            // This log message is showing!
-            Debug.Log($"Updating Photon Custom Property {CHARACTER_SELECTION_NUMBER} for {PhotonNetwork.LocalPlayer.NickName} to {selection}");
-            // Set property of local player: playerSelectionProperty
-            PhotonNetwork.LocalPlayer.SetCustomProperties(playerSelectionProperty);
-
-            // Update the UI elements (profile image and character model)
-            UpdateCharacterModel(selection);  // Updates character image in the player selection
-        }
-
-        private void UpdateCharacterModel(int selection) // Update visuals based on selection.
-        {
-            if (selection >= 0 && selection < profileSprites.Length)
-            {
-                // Set the Image.sprite object/component equal to the sprite in the profileSpites list based on the int selection
-                _portraitImage.sprite = profileSprites[selection];
-                Debug.Log($"Character model updated to selection index: {selection}");
-            }
-            else
-            {
-                Debug.LogError("Invalid selection index: " + selection);
-            }
-        }
 
         public void KickPlayer() // Function plays after clicking the kick player button.
         {
@@ -184,10 +165,10 @@ namespace KnoxGameStudios
             Owner.SetCustomProperties(kickedProperty); // Photon function to store the dictionary
         }
 
-        //_____________________________________________________________________________________________________________________
-        // OVERRIDE VOIDS (OVERRIDE FUNCTIONS):
-        //---------------------------------------------------------------------------------------------------------------------
-        #region PHOTON CALLBACK METHODS
+    
+//_____________________________________________________________________________________________________________________
+// OVERRIDE VOIDS (OVERRIDE FUNCTIONS):
+//---------------------------------------------------------------------------------------------------------------------
         public override void OnMasterClientSwitched(Player newMasterClient) // Provide the "Host UI" to the new Client Master
         {
             if (Owner.Equals(newMasterClient)) // If the player who changes properties equals the Photon Master Clients... So this will only happen for the Client Master
@@ -203,36 +184,34 @@ namespace KnoxGameStudios
             Debug.Log($"targetPlayer :: {targetPlayer}");
             Debug.Log($"chargedProps :: {changedProps}");
 
-            if (Owner == null)
+            if (!Owner.Equals(targetPlayer)) return;
+
+            object characterSelectedNumberObject;
+            if (changedProps.TryGetValue(CHARACTER_SELECTION_NUMBER, out characterSelectedNumberObject))
             {
-                Debug.LogError("Owner is null. Cannot proceed with OnPlayerPropertiesUpdate.");
-                return;
+                _currentSelection = (int)characterSelectedNumberObject;
+                UpdateCharacterModel(_currentSelection);
             }
 
-            if (Owner.Equals(targetPlayer))  // Ensure the update is for the right player
+            object kickedPlayerObject;
+            if (changedProps.TryGetValue(KICKED_PLAYER, out kickedPlayerObject))
             {
-                Debug.Log("Owner equals targetPlayer");
-                if (changedProps.ContainsKey(CHARACTER_SELECTION_NUMBER))
+                bool kickedPlayer = (bool)kickedPlayerObject;
+                if(kickedPlayer)
                 {
-                    object selectionObject = changedProps[CHARACTER_SELECTION_NUMBER];
-                    if (selectionObject is int selectionIndex)
+                    Hashtable kickedProperty = new Hashtable()
                     {
-                        _currentSelection = selectionIndex;
-                        UpdateCharacterModel(_currentSelection);  // Update the player's character model
-                    }
-                    else
-                    {
-                        Debug.LogError("CHARACTER_SELECTION_NUMBER property is not an int.");
-                    }
-                }
+                        {KICKED_PLAYER, false}
+                    };
+                    Owner.SetCustomProperties(kickedProperty);
 
-                if (changedProps.ContainsKey(KICKED_PLAYER) && (bool)changedProps[KICKED_PLAYER])
-                {
                     OnKickPlayer?.Invoke(Owner);
                 }
             }
         }
-        #endregion PHOTON CALLBACK METHODS
+
+
+
+        
     }
 }
-#endregion
